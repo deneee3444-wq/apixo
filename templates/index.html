@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>APIXO STUDIO · Cinematic AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06070d; --bg-2:#0c0e18; --bg-3:#13151f;
+  --card:rgba(20,22,35,.55); --card-2:rgba(28,30,46,.6);
+  --border:rgba(120,130,200,.16); --border-strong:rgba(140,150,220,.32);
+  --text:#e8eaf0; --text-dim:#8a8fa3; --text-mute:#5d6177;
+  --accent:#7c5cff; --accent-2:#00d4ff; --accent-3:#ff5cf2;
+  --grad:linear-gradient(135deg,#7c5cff 0%,#00d4ff 60%,#ff5cf2 100%);
+  --grad-2:linear-gradient(135deg,#7c5cff,#00d4ff);
+  --success:#2ecc71; --danger:#ff5577; --warning:#ffaa33;
+  --r-sm:8px; --r-md:12px; --r-lg:18px; --r-xl:24px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;overflow-x:hidden;position:relative;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse at 15% 0%, rgba(124,92,255,.18) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 100%, rgba(0,212,255,.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(255,92,242,.05) 0%, transparent 70%);
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.025;
+  background-image:linear-gradient(rgba(255,255,255,.6) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.6) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+/* ═══════════ HEADER ═══════════ */
+header.topbar{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;gap:20px;padding:14px 28px;
+  background:rgba(8,9,16,.65);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.brand{
+  font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;letter-spacing:.4px;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+  display:flex;align-items:center;gap:10px;
+}
+.brand-dot{
+  width:10px;height:10px;border-radius:50%;background:var(--grad);
+  box-shadow:0 0 16px rgba(124,92,255,.7);
+  animation:pulseDot 2.4s infinite;
+}
+@keyframes pulseDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.7}}
+.topbar .spacer{flex:1}
+.chip{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 14px;background:rgba(20,22,35,.6);border:1px solid var(--border);
+  border-radius:999px;font-size:13px;color:var(--text-dim);
+  transition:.2s;
+}
+.chip.success{border-color:rgba(46,204,113,.3);color:#86eab1}
+.chip.warning{border-color:rgba(255,170,51,.3);color:#ffcc77}
+.chip.danger{border-color:rgba(255,85,119,.3);color:#ff8aa3}
+.chip b{color:var(--text);font-weight:600;font-family:'JetBrains Mono',monospace}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:9px 16px;border-radius:10px;font-size:13px;font-weight:500;
+  background:rgba(20,22,35,.6);border:1px solid var(--border);
+  color:var(--text);cursor:pointer;font-family:inherit;transition:.2s;
+}
+.btn:hover{border-color:var(--border-strong);background:rgba(28,30,46,.8)}
+.btn.primary{background:var(--grad-2);border:none;color:#fff;font-weight:600}
+.btn.primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(124,92,255,.4)}
+.btn.ghost{background:transparent}
+.btn.danger:hover{border-color:rgba(255,85,119,.4);color:#ff8aa3}
+.btn[disabled]{opacity:.5;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.icon{width:16px;height:16px;flex-shrink:0}
+
+/* ═══════════ LAYOUT ═══════════ */
+.workspace{
+  display:grid;grid-template-columns:minmax(360px,460px) 1fr;gap:24px;
+  padding:24px 28px;flex:1;
+}
+.panel{
+  background:var(--card);backdrop-filter:blur(20px);
+  border:1px solid var(--border);border-radius:var(--r-xl);
+  padding:22px;position:relative;overflow:hidden;
+}
+.panel.tall{min-height:calc(100vh - 130px)}
+
+/* ═══════════ TABS ═══════════ */
+.tabs{
+  display:flex;gap:6px;padding:5px;background:rgba(8,9,16,.6);
+  border:1px solid var(--border);border-radius:14px;margin-bottom:22px;
+}
+.tab{
+  flex:1;padding:11px 14px;border-radius:10px;font-size:13px;font-weight:500;
+  cursor:pointer;text-align:center;transition:.2s;color:var(--text-dim);
+  display:flex;align-items:center;justify-content:center;gap:8px;user-select:none;
+}
+.tab:hover{color:var(--text)}
+.tab.active{
+  background:var(--grad-2);color:#fff;font-weight:600;
+  box-shadow:0 6px 20px rgba(124,92,255,.3);
+}
+
+/* ═══════════ FORM ═══════════ */
+.form-section{display:flex;flex-direction:column;gap:18px}
+.field{display:flex;flex-direction:column;gap:8px}
+.field-label{
+  font-size:11px;font-weight:600;letter-spacing:.8px;color:var(--text-mute);
+  text-transform:uppercase;display:flex;align-items:center;gap:6px;
+}
+.field-label .hint{
+  font-weight:400;letter-spacing:.2px;text-transform:none;
+  color:var(--text-mute);font-size:11px;margin-left:auto;
+}
+.input, .textarea, .select{
+  width:100%;padding:12px 14px;font-size:14px;font-family:inherit;
+  background:rgba(8,9,16,.55);border:1px solid var(--border);
+  border-radius:var(--r-md);color:var(--text);outline:none;transition:.18s;
+}
+.input:focus, .textarea:focus, .select:focus{
+  border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,92,255,.16);
+  background:rgba(8,9,16,.85);
+}
+.textarea{min-height:90px;resize:vertical;line-height:1.5}
+.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238a8fa3'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:18px;padding-right:38px;cursor:pointer}
+
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-row-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip-opt{
+  padding:9px 14px;border-radius:10px;font-size:13px;cursor:pointer;
+  background:rgba(8,9,16,.5);border:1px solid var(--border);color:var(--text-dim);
+  transition:.18s;font-family:inherit;user-select:none;
+}
+.chip-opt:hover{color:var(--text);border-color:var(--border-strong)}
+.chip-opt.active{
+  background:linear-gradient(135deg,rgba(124,92,255,.18),rgba(0,212,255,.12));
+  border-color:rgba(124,92,255,.5);color:#fff;font-weight:600;
+}
+
+.switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.switch input{display:none}
+.switch .track{
+  width:36px;height:20px;border-radius:999px;background:rgba(40,44,68,.8);
+  position:relative;transition:.2s;border:1px solid var(--border);
+}
+.switch .track::after{
+  content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;
+  background:#fff;border-radius:50%;transition:.2s;
+}
+.switch input:checked + .track{background:var(--grad-2);border-color:transparent}
+.switch input:checked + .track::after{left:18px}
+.switch span{font-size:13px;color:var(--text-dim)}
+
+/* ═══════════ DROPZONE ═══════════ */
+.dropzone{
+  position:relative;border:2px dashed var(--border-strong);border-radius:var(--r-lg);
+  padding:18px;text-align:center;cursor:pointer;background:rgba(8,9,16,.4);
+  transition:.2s;
+}
+.dropzone:hover{border-color:var(--accent);background:rgba(124,92,255,.06)}
+.dropzone.dragover{border-color:var(--accent);background:rgba(124,92,255,.1);transform:scale(1.01)}
+.dropzone input{display:none}
+.dz-icon{
+  width:34px;height:34px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;background:rgba(124,92,255,.12);
+}
+.dz-text{font-size:13px;color:var(--text-dim)}
+.dz-text b{color:var(--text);font-weight:600}
+.previews{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.preview{
+  position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;
+  background:#000;border:1px solid var(--border);
+}
+.preview img, .preview video{width:100%;height:100%;object-fit:cover;display:block}
+.preview .x{
+  position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;
+  background:rgba(0,0,0,.7);color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:11px;cursor:pointer;border:none;line-height:1;
+}
+.preview.audio{display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:10px;padding:4px;text-align:center}
+
+/* ═══════════ COST PILL ═══════════ */
+.cost-pill{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;border-radius:var(--r-md);
+  background:linear-gradient(135deg,rgba(124,92,255,.08),rgba(0,212,255,.04));
+  border:1px solid rgba(124,92,255,.18);
+}
+.cost-pill .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--text-mute)}
+.cost-pill .val{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:#fff}
+.cost-pill .spacer{flex:1}
+
+.generate-btn{
+  width:100%;padding:16px;font-size:15px;font-weight:700;letter-spacing:.4px;
+  background:var(--grad);border:none;border-radius:var(--r-md);color:#fff;
+  cursor:pointer;font-family:inherit;transition:.2s;
+  box-shadow:0 8px 28px rgba(124,92,255,.25);
+}
+.generate-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 14px 40px rgba(124,92,255,.4)}
+.generate-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ═══════════ RESULTS ═══════════ */
+.results-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:18px;flex-wrap:wrap;gap:10px;
+}
+.results-title{
+  font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px;
+  display:flex;align-items:center;gap:10px;
+}
+.results-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:16px;
+}
+.result-card{
+  background:var(--card-2);border:1px solid var(--border);border-radius:var(--r-lg);
+  overflow:hidden;display:flex;flex-direction:column;
+  animation:rise .4s cubic-bezier(.2,.8,.2,1);
+}
+.result-media{aspect-ratio:16/9;background:#000;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.result-media img, .result-media video{width:100%;height:100%;object-fit:contain;display:block}
+.result-meta{
+  padding:12px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-dim);
+  border-top:1px solid var(--border);
+}
+.result-meta .ts{font-family:'JetBrains Mono',monospace}
+.result-meta .spacer{flex:1}
+.result-meta a{
+  text-decoration:none;color:var(--text-dim);padding:6px 10px;border-radius:8px;
+  border:1px solid var(--border);transition:.2s;
+}
+.result-meta a:hover{color:var(--text);border-color:var(--border-strong)}
+
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 20px;color:var(--text-mute);text-align:center;gap:14px;
+  border:1px dashed var(--border);border-radius:var(--r-lg);
+}
+.empty .ico{font-size:42px;opacity:.5}
+.empty h3{font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--text-dim);font-size:16px}
+.empty p{font-size:13px;max-width:300px;line-height:1.6}
+
+/* ═══════════ STATUS / PROGRESS ═══════════ */
+.status-card{
+  margin-bottom:18px;padding:16px 18px;border-radius:var(--r-lg);
+  background:linear-gradient(135deg,rgba(124,92,255,.1),rgba(0,212,255,.06));
+  border:1px solid rgba(124,92,255,.3);
+  display:flex;align-items:center;gap:14px;
+}
+.spinner{
+  width:22px;height:22px;border-radius:50%;
+  border:2.5px solid rgba(124,92,255,.25);border-top-color:#7c5cff;
+  animation:spin .8s linear infinite;flex-shrink:0;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.status-card .txt{flex:1}
+.status-card .head{font-weight:600;font-size:14px;color:#fff;margin-bottom:2px}
+.status-card .sub{font-size:12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
+
+/* ═══════════ TOAST ═══════════ */
+#toasts{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:10px;max-width:360px}
+.toast{
+  padding:14px 18px;border-radius:var(--r-md);
+  background:rgba(20,22,35,.95);backdrop-filter:blur(16px);
+  border:1px solid var(--border);color:var(--text);
+  box-shadow:0 16px 40px rgba(0,0,0,.4);font-size:13px;
+  animation:slideIn .3s cubic-bezier(.2,.8,.2,1);
+  display:flex;align-items:flex-start;gap:10px;
+}
+.toast.success{border-color:rgba(46,204,113,.4)}
+.toast.error{border-color:rgba(255,85,119,.4)}
+.toast.warning{border-color:rgba(255,170,51,.4)}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+
+/* ═══════════ MODAL ═══════════ */
+#modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(10px);
+  z-index:100;display:none;align-items:center;justify-content:center;padding:20px;
+}
+#modal.show{display:flex}
+.modal-box{
+  background:var(--bg-2);border:1px solid var(--border);border-radius:var(--r-xl);
+  padding:28px;max-width:420px;width:100%;
+  animation:rise .3s;
+}
+.modal-box h3{font-family:'Space Grotesk',sans-serif;margin-bottom:8px;font-size:18px}
+.modal-box p{color:var(--text-dim);font-size:14px;margin-bottom:20px;line-height:1.5}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end}
+
+/* ═══════════ MOBILE ═══════════ */
+@media (max-width: 980px){
+  .workspace{grid-template-columns:1fr;padding:16px}
+  .panel.tall{min-height:auto}
+  header.topbar{padding:12px 16px;gap:12px;flex-wrap:wrap}
+  .brand{font-size:17px}
+  .chip{padding:6px 12px;font-size:12px}
+  .btn{padding:8px 12px;font-size:12px}
+  .results-grid{grid-template-columns:1fr}
+}
+@media (max-width: 560px){
+  .topbar .spacer{display:none}
+  .field-row, .field-row-3{grid-template-columns:1fr}
+  .brand-text{display:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ═══════ TOP BAR ═══════ -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span class="brand-text">APIXO STUDIO</span>
+    </div>
+
+    <div class="chip" id="acct-chip">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+      <span id="acct-text">Hesap bağlanmadı</span>
+    </div>
+
+    <div class="chip" id="balance-chip">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>
+      <b id="balance-text">— kredi</b>
+    </div>
+
+    <div class="spacer"></div>
+
+    <button class="btn" id="btn-new-account" title="Yeni APIXO hesabı oluştur">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v16M4 12h16"/></svg>
+      <span>Yeni Hesap</span>
+    </button>
+
+    <button class="btn" id="btn-refresh" title="Bakiyeyi yenile">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
+    </button>
+
+    <a class="btn danger ghost" href="/logout" title="Çıkış">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l-5-5 5-5M5 12h12"/></svg>
+    </a>
+  </header>
+
+  <!-- ═══════ WORKSPACE ═══════ -->
+  <div class="workspace">
+
+    <!-- FORM PANEL -->
+    <aside class="panel tall" id="form-panel">
+      <div class="tabs" id="task-tabs">
+        <div class="tab active" data-task="video">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M22 8l-6 4 6 4z"/></svg>
+          Video
+        </div>
+        <div class="tab" data-task="image">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+          Image
+        </div>
+      </div>
+
+      <div class="form-section" id="dynamic-form">
+        <!-- Dinamik olarak doldurulacak -->
+      </div>
+
+      <div style="height:18px"></div>
+
+      <div class="cost-pill">
+        <div>
+          <div class="lbl">Tahmini maliyet</div>
+          <div class="val" id="cost-val">— kredi</div>
+        </div>
+        <div class="spacer"></div>
+        <div style="text-align:right">
+          <div class="lbl">Mevcut bakiye</div>
+          <div class="val" id="cost-bal">—</div>
+        </div>
+      </div>
+
+      <div style="height:14px"></div>
+
+      <button class="generate-btn" id="btn-generate">
+        ✨ Üretimi Başlat
+      </button>
+    </aside>
+
+    <!-- RESULTS PANEL -->
+    <section class="panel tall" id="results-panel">
+      <div class="results-header">
+        <div class="results-title">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
+          Çıktılar
+        </div>
+        <button class="btn ghost" id="btn-clear" style="font-size:12px">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          Temizle
+        </button>
+      </div>
+
+      <div id="status-area"></div>
+
+      <div id="results-area" class="results-grid"></div>
+    </section>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div id="toasts"></div>
+
+<!-- MODAL -->
+<div id="modal">
+  <div class="modal-box">
+    <h3 id="modal-title">Onay</h3>
+    <p id="modal-body">…</p>
+    <div class="modal-actions">
+      <button class="btn" id="modal-cancel">Vazgeç</button>
+      <button class="btn primary" id="modal-ok">Tamam</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════════════════
+const state = {
+  models: null,              // /api/models cevabı
+  task:   'video',           // 'video' | 'image'
+  model:  null,              // ör. 'wan-2-5-video'
+  mode:   null,              // ör. 'text-to-video'
+  form:   {},                // dinamik form değerleri
+  balance: null,
+  acctEmail: null,
+  refImageUrls: [],          // image-to-image için yüklenmiş URL'ler
+  refImagePreviews: [],      // {name, url, dataUrl}
+  i2vImageUrl: null,
+  i2vImagePreview: null,
+  audioUrl: null,
+  audioName: null,
+  generating: false,
+  results: [],               // {type, url, ts}
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  UTIL
+// ═══════════════════════════════════════════════════════════════════════════
+const $ = (q, p=document) => p.querySelector(q);
+const $$ = (q, p=document) => [...p.querySelectorAll(q)];
+
+function toast(msg, type='info', timeout=4500){
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<div>${msg}</div>`;
+  $('#toasts').appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(20px)'; setTimeout(()=>el.remove(), 300); }, timeout);
+}
+
+async function api(path, opts={}){
+  opts.headers = opts.headers || {};
+  if(opts.body && !(opts.body instanceof FormData)){
+    opts.headers['Content-Type'] = 'application/json';
+    if(typeof opts.body !== 'string') opts.body = JSON.stringify(opts.body);
+  }
+  const r = await fetch(path, opts);
+  let j; try { j = await r.json(); } catch { j = {}; }
+  if(!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+  return j;
+}
+
+function confirmModal(title, body){
+  return new Promise(resolve=>{
+    $('#modal-title').textContent = title;
+    $('#modal-body').textContent = body;
+    $('#modal').classList.add('show');
+    const ok = ()=>{ cleanup(); resolve(true); };
+    const cancel = ()=>{ cleanup(); resolve(false); };
+    function cleanup(){
+      $('#modal').classList.remove('show');
+      $('#modal-ok').removeEventListener('click', ok);
+      $('#modal-cancel').removeEventListener('click', cancel);
+    }
+    $('#modal-ok').addEventListener('click', ok);
+    $('#modal-cancel').addEventListener('click', cancel);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  ACCOUNT
+// ═══════════════════════════════════════════════════════════════════════════
+async function whoami(){
+  try{
+    const j = await api('/api/whoami');
+    if(j.logged_in){
+      state.acctEmail = j.email;
+      $('#acct-text').textContent = j.email;
+      $('#acct-chip').classList.add('success');
+      await refreshBalance();
+    }else{
+      $('#acct-text').textContent = 'Hesap bağlanmadı';
+      $('#acct-chip').classList.remove('success');
+      $('#balance-text').textContent = '— kredi';
+    }
+  }catch(e){}
+}
+
+async function newAccount(){
+  const btn = $('#btn-new-account');
+  btn.disabled = true;
+  const oldHtml = btn.innerHTML;
+  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> Hesap oluşturuluyor…';
+  try{
+    const j = await api('/api/apixo-login', {method:'POST'});
+    state.acctEmail = j.email;
+    $('#acct-text').textContent = j.email;
+    $('#acct-chip').classList.add('success');
+    toast(`Yeni hesap hazır: <b>${j.email}</b>`, 'success');
+    await refreshBalance();
+  }catch(e){
+    toast('Hesap oluşturulamadı: ' + e.message, 'error');
+  }finally{
+    btn.disabled = false;
+    btn.innerHTML = oldHtml;
+  }
+}
+
+async function refreshBalance(){
+  try{
+    const j = await api('/api/balance');
+    state.balance = j.balance;
+    $('#balance-text').textContent = j.balance.toFixed(4) + ' kredi';
+    $('#cost-bal').textContent = j.balance.toFixed(4);
+    $('#balance-chip').classList.remove('warning','danger');
+    if(j.balance < 0.1) $('#balance-chip').classList.add('danger');
+    else if(j.balance < 0.3) $('#balance-chip').classList.add('warning');
+  }catch(e){
+    $('#balance-text').textContent = '— kredi';
+    $('#cost-bal').textContent = '—';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  FORM BUILDER
+// ═══════════════════════════════════════════════════════════════════════════
+function selectTask(task){
+  state.task = task;
+  $$('#task-tabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.task === task));
+
+  // İlk modeli seç
+  const modelKeys = Object.keys(state.models).filter(k => state.models[k].type === task);
+  state.model = modelKeys[0];
+  state.mode = Object.keys(state.models[state.model].modes)[0];
+  state.refImageUrls = [];
+  state.refImagePreviews = [];
+  state.i2vImageUrl = null;
+  state.i2vImagePreview = null;
+  state.audioUrl = null;
+  state.audioName = null;
+  state.form = {};
+  buildForm();
+}
+
+function buildForm(){
+  const form = $('#dynamic-form');
+  form.innerHTML = '';
+  const modelCfg = state.models[state.model];
+  const modes = modelCfg.modes;
+  const modeCfg = modes[state.mode];
+  const defaults = modeCfg.default_params;
+
+  // Field state init from defaults if not present
+  for(const k in defaults){
+    if(state.form[k] === undefined) state.form[k] = defaults[k];
+  }
+  state.form.mode = state.mode;
+
+  // ───── Model + Mode selectors
+  const headerWrap = document.createElement('div');
+  headerWrap.className = 'field';
+  headerWrap.innerHTML = `
+    <div class="field-label">Model <span class="hint">${modelCfg.display_name}</span></div>
+  `;
+  const modelKeys = Object.keys(state.models).filter(k => state.models[k].type === state.task);
+  if(modelKeys.length > 1){
+    const sel = document.createElement('select');
+    sel.className = 'select';
+    modelKeys.forEach(k => {
+      const opt = document.createElement('option');
+      opt.value = k; opt.textContent = state.models[k].display_name;
+      if(k===state.model) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.onchange = () => {
+      state.model = sel.value;
+      state.mode = Object.keys(state.models[state.model].modes)[0];
+      state.form = {};
+      buildForm();
+    };
+    headerWrap.appendChild(sel);
+  }
+  form.appendChild(headerWrap);
+
+  // Mode chips
+  if(Object.keys(modes).length > 1){
+    const modeWrap = document.createElement('div');
+    modeWrap.className = 'field';
+    modeWrap.innerHTML = `<div class="field-label">Mod</div>`;
+    const chips = document.createElement('div');
+    chips.className = 'chips';
+    Object.keys(modes).forEach(mk => {
+      const c = document.createElement('button');
+      c.type = 'button';
+      c.className = 'chip-opt' + (mk===state.mode ? ' active':'');
+      c.textContent = modes[mk].display_name || mk;
+      c.onclick = () => {
+        state.mode = mk;
+        state.form = {};
+        state.refImageUrls = []; state.refImagePreviews = [];
+        state.i2vImageUrl = null; state.i2vImagePreview = null;
+        state.audioUrl = null; state.audioName = null;
+        buildForm();
+      };
+      chips.appendChild(c);
+    });
+    modeWrap.appendChild(chips);
+    form.appendChild(modeWrap);
+  }
+
+  // ───── Prompt
+  form.appendChild(makeField('Prompt', textarea('prompt', state.form.prompt || '', 'Sahneyi tarif et…')));
+  form.appendChild(makeField('Negatif Prompt (opsiyonel)', textarea('negative_prompt', state.form.negative_prompt || '', 'İstenmeyen detaylar…', 60)));
+
+  // ───── VIDEO özel alanları
+  if(state.task === 'video'){
+    // Resolution
+    form.appendChild(makeField('Çözünürlük',
+      chipGroup('resolution', modeCfg.supported_resolutions, state.form.resolution)));
+
+    // Duration & Aspect ratio
+    const row = document.createElement('div');
+    row.className = 'field-row';
+    row.appendChild(makeField('Süre (sn)',
+      chipGroup('duration', modeCfg.supported_durations, state.form.duration, true)));
+    row.appendChild(makeField('Aspect Ratio',
+      chipGroup('aspect_ratio', modeCfg.supported_ratios, state.form.aspect_ratio)));
+    form.appendChild(row);
+
+    // Image (i2v)
+    if(modeCfg.needs_image){
+      const wrap = makeField('Referans Görsel (zorunlu)', dropzone('image', 1));
+      form.appendChild(wrap);
+    }
+
+    // Audio
+    if(modeCfg.supports_audio){
+      const wrap = makeField('Ses Dosyası (opsiyonel)', dropzone('audio', 1, true));
+      form.appendChild(wrap);
+    }
+
+    // Seed
+    form.appendChild(makeField('Seed (opsiyonel)', input('seed', state.form.seed || '', 'Sabit sonuç için sayı')));
+
+    // Prompt expansion
+    const swWrap = document.createElement('div');
+    swWrap.className = 'field';
+    const sw = document.createElement('label');
+    sw.className = 'switch';
+    sw.innerHTML = `
+      <input type="checkbox" ${state.form.enable_prompt_expansion ? 'checked':''}>
+      <span class="track"></span>
+      <span>Prompt'u otomatik genişlet</span>
+    `;
+    sw.querySelector('input').onchange = e => { state.form.enable_prompt_expansion = e.target.checked; };
+    swWrap.appendChild(sw);
+    form.appendChild(swWrap);
+  }
+
+  // ───── IMAGE özel alanları
+  if(state.task === 'image'){
+    // Ref images upload
+    const maxRef = modeCfg.max_ref_images || 9;
+    const refWrap = makeField(`Referans Görseller (max ${maxRef}, opsiyonel · img2img için)`,
+      dropzone('refs', maxRef));
+    form.appendChild(refWrap);
+
+    // Resolution (img2img vs t2i)
+    const isImg2Img = state.refImageUrls.length > 0;
+    const resKey = isImg2Img ? 'supported_resolutions_img2img' : 'supported_resolutions_t2i';
+    const resList = modeCfg[resKey] || modeCfg.supported_resolutions || ['2k'];
+    if(!resList.includes(state.form.resolution)) state.form.resolution = resList[0];
+
+    form.appendChild(makeField(
+      `Çözünürlük ${isImg2Img ? '(img2img)' : '(text2img)'}`,
+      chipGroup('resolution', resList, state.form.resolution)
+    ));
+
+    // Num images
+    form.appendChild(makeField('Adet',
+      chipGroup('num_images', [1,2,3,4], state.form.num_images || 1, true)));
+
+    // Seed
+    form.appendChild(makeField('Seed (opsiyonel)', input('seed', state.form.seed || '', 'Sabit sonuç için sayı')));
+  }
+
+  updateCost();
+}
+
+// ───── Field helpers
+function makeField(label, control){
+  const w = document.createElement('div');
+  w.className = 'field';
+  const l = document.createElement('div');
+  l.className = 'field-label';
+  l.textContent = label;
+  w.appendChild(l);
+  w.appendChild(control);
+  return w;
+}
+function input(key, val, ph=''){
+  const i = document.createElement('input');
+  i.className = 'input';
+  i.value = val;
+  i.placeholder = ph;
+  i.oninput = () => { state.form[key] = i.value; };
+  return i;
+}
+function textarea(key, val, ph='', minH=90){
+  const i = document.createElement('textarea');
+  i.className = 'textarea';
+  i.value = val;
+  i.placeholder = ph;
+  i.style.minHeight = minH + 'px';
+  i.oninput = () => { state.form[key] = i.value; };
+  return i;
+}
+function chipGroup(key, opts, current, numeric=false){
+  const wrap = document.createElement('div');
+  wrap.className = 'chips';
+  opts.forEach(opt => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip-opt' + ((opt == current) ? ' active' : '');
+    b.textContent = opt;
+    b.onclick = () => {
+      state.form[key] = numeric ? Number(opt) : opt;
+      wrap.querySelectorAll('.chip-opt').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      updateCost();
+    };
+    wrap.appendChild(b);
+  });
+  if(state.form[key] === undefined) state.form[key] = numeric ? Number(opts[0]) : opts[0];
+  return wrap;
+}
+
+// ───── Dropzone
+function dropzone(kind, max, isAudio=false){
+  // kind: 'image' (i2v single), 'refs' (multi img), 'audio'
+  const wrap = document.createElement('div');
+  const dz = document.createElement('label');
+  dz.className = 'dropzone';
+  dz.innerHTML = `
+    <div class="dz-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a89dff" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+    </div>
+    <div class="dz-text">
+      <b>Dosya seç</b> ya da buraya sürükle
+      <br><span style="font-size:11px;color:var(--text-mute)">
+        ${isAudio ? 'mp3 · wav · m4a' : 'jpg · png · webp'} · max ${max}
+      </span>
+    </div>
+    <input type="file" ${max>1?'multiple':''} accept="${isAudio?'audio/*':'image/*'}">
+  `;
+  const fileInput = dz.querySelector('input[type=file]');
+  const previews = document.createElement('div');
+  previews.className = 'previews';
+
+  const refresh = () => {
+    previews.innerHTML = '';
+    let list;
+    if(kind === 'image'){
+      list = state.i2vImagePreview ? [state.i2vImagePreview] : [];
+    } else if(kind === 'refs'){
+      list = state.refImagePreviews;
+    } else {
+      list = state.audioUrl ? [{audio:true, name: state.audioName}] : [];
+    }
+    list.forEach((p, idx) => {
+      const pe = document.createElement('div');
+      pe.className = 'preview' + (p.audio ? ' audio' : '');
+      if(p.audio){
+        pe.textContent = '🎵 ' + (p.name||'audio');
+      } else {
+        pe.innerHTML = `<img src="${p.dataUrl}">`;
+      }
+      const xBtn = document.createElement('button');
+      xBtn.className = 'x'; xBtn.textContent = '×';
+      xBtn.onclick = (e) => {
+        e.preventDefault(); e.stopPropagation();
+        if(kind === 'image'){ state.i2vImageUrl = null; state.i2vImagePreview = null; }
+        else if(kind === 'refs'){
+          state.refImageUrls.splice(idx,1);
+          state.refImagePreviews.splice(idx,1);
+          buildForm(); // re-render to update resolution options
+          return;
+        }
+        else { state.audioUrl = null; state.audioName = null; }
+        refresh();
+      };
+      pe.appendChild(xBtn);
+      previews.appendChild(pe);
+    });
+  };
+
+  const handleFiles = async (files) => {
+    files = [...files];
+    if(kind==='image' || kind==='audio') files = files.slice(0,1);
+    if(kind==='refs'){
+      const remaining = max - state.refImagePreviews.length;
+      files = files.slice(0, remaining);
+    }
+    for(const file of files){
+      const dataUrl = !isAudio ? await readAsDataURL(file) : null;
+      const fd = new FormData();
+      fd.append('file', file);
+      const tmpId = Math.random().toString(36).slice(2);
+      // optimistic preview
+      if(kind==='image'){
+        state.i2vImagePreview = {name: file.name, dataUrl, _tmp: tmpId};
+      } else if(kind==='refs'){
+        state.refImagePreviews.push({name: file.name, dataUrl, _tmp: tmpId});
+      } else {
+        state.audioName = file.name;
+      }
+      refresh();
+      try{
+        const r = await fetch('/api/upload', {method:'POST', body:fd});
+        const j = await r.json();
+        if(!r.ok) throw new Error(j.error || 'upload failed');
+        if(kind==='image'){ state.i2vImageUrl = j.url; }
+        else if(kind==='refs'){ state.refImageUrls.push(j.url); }
+        else { state.audioUrl = j.url; }
+        toast(`📤 ${file.name} yüklendi`, 'success', 2500);
+      }catch(e){
+        toast('Yükleme hatası: ' + e.message, 'error');
+        if(kind==='image'){ state.i2vImagePreview = null; }
+        else if(kind==='refs'){
+          state.refImagePreviews = state.refImagePreviews.filter(p=>p._tmp!==tmpId);
+        }
+        else { state.audioName = null; }
+        refresh();
+      }
+    }
+    if(kind==='refs') buildForm();
+  };
+
+  fileInput.onchange = e => handleFiles(e.target.files);
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+
+  wrap.appendChild(dz);
+  wrap.appendChild(previews);
+  refresh();
+  return wrap;
+}
+
+function readAsDataURL(file){
+  return new Promise(res => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.readAsDataURL(file);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  COST
+// ═══════════════════════════════════════════════════════════════════════════
+function updateCost(){
+  let cost = 0;
+  const modelCfg = state.models[state.model];
+  const modeCfg = modelCfg.modes[state.mode];
+  if(state.task === 'video'){
+    const tbl = modeCfg.cost_table || {};
+    cost = (tbl[state.form.resolution] || {})[state.form.duration] || 0;
+  } else {
+    cost = (modeCfg.estimated_credits || 0) * (state.form.num_images || 1);
+  }
+  $('#cost-val').textContent = cost.toFixed(4) + ' kredi';
+
+  if(state.balance != null && cost > state.balance){
+    $('#cost-val').style.color = '#ff8aa3';
+  } else {
+    $('#cost-val').style.color = '#fff';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  GENERATE
+// ═══════════════════════════════════════════════════════════════════════════
+async function generate(){
+  if(state.generating){ return; }
+  if(!state.acctEmail){
+    toast('Önce bir APIXO hesabı oluştur.', 'warning');
+    return;
+  }
+  if(!state.form.prompt || !state.form.prompt.trim()){
+    toast('Prompt boş olamaz.', 'warning');
+    return;
+  }
+  const modeCfg = state.models[state.model].modes[state.mode];
+
+  // Video i2v image kontrol
+  if(state.task==='video' && modeCfg.needs_image && !state.i2vImageUrl){
+    toast('Bu mod için referans görsel zorunlu.', 'warning');
+    return;
+  }
+
+  const payload = {
+    task_type: state.task,
+    model: state.model,
+    mode: state.mode,
+    prompt: state.form.prompt,
+    negative_prompt: state.form.negative_prompt || '',
+    seed: state.form.seed || '',
+  };
+  if(state.task === 'video'){
+    payload.resolution = state.form.resolution;
+    payload.duration = Number(state.form.duration);
+    payload.aspect_ratio = state.form.aspect_ratio;
+    payload.enable_prompt_expansion = !!state.form.enable_prompt_expansion;
+    if(state.i2vImageUrl) payload.image_url = state.i2vImageUrl;
+    if(state.audioUrl) payload.audio_url = state.audioUrl;
+  } else {
+    payload.resolution = state.form.resolution;
+    payload.num_images = Number(state.form.num_images) || 1;
+    payload.image_urls = state.refImageUrls;
+  }
+
+  state.generating = true;
+  $('#btn-generate').disabled = true;
+  $('#btn-generate').textContent = '⏳ Başlatılıyor…';
+
+  setStatus('Üretim başlatılıyor…', 'API isteği gönderiliyor');
+
+  try{
+    const j = await api('/api/generate', {method:'POST', body: payload});
+    const taskId = j.task_id;
+    const model = j.model;
+    setStatus('Üretim devam ediyor…', `task: ${taskId}`);
+    await pollTask(taskId, model);
+  }catch(e){
+    toast('Hata: ' + e.message, 'error');
+    clearStatus();
+  }finally{
+    state.generating = false;
+    $('#btn-generate').disabled = false;
+    $('#btn-generate').textContent = '✨ Üretimi Başlat';
+    await refreshBalance();
+  }
+}
+
+function setStatus(head, sub){
+  $('#status-area').innerHTML = `
+    <div class="status-card">
+      <div class="spinner"></div>
+      <div class="txt">
+        <div class="head">${head}</div>
+        <div class="sub">${sub||''}</div>
+      </div>
+    </div>
+  `;
+}
+function clearStatus(){ $('#status-area').innerHTML = ''; }
+
+async function pollTask(taskId, model){
+  const started = Date.now();
+  const timeout = 600 * 1000; // 10 dk
+  while(Date.now() - started < timeout){
+    await new Promise(r => setTimeout(r, 4000));
+    try{
+      const r = await fetch(`/api/task-status?task_id=${encodeURIComponent(taskId)}&model=${encodeURIComponent(model)}`);
+      const j = await r.json();
+      const elapsed = Math.floor((Date.now() - started)/1000);
+      setStatus(`State: ${j.state || '...'}`, `task ${taskId} · ${elapsed}s`);
+      if(j.state === 'success'){
+        clearStatus();
+        j.outputs.forEach(url => addResult(state.task, url));
+        toast(`✨ ${j.outputs.length} çıktı hazır`, 'success');
+        return;
+      }
+      if(j.state === 'failed'){
+        clearStatus();
+        toast('Üretim başarısız: ' + (j.error || 'bilinmeyen hata'), 'error');
+        return;
+      }
+    }catch(e){
+      // pollingu sürdür
+    }
+  }
+  clearStatus();
+  toast('Zaman aşımı.', 'error');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  RESULTS
+// ═══════════════════════════════════════════════════════════════════════════
+function addResult(type, url){
+  state.results.unshift({type, url, ts: new Date()});
+  renderResults();
+}
+
+function renderResults(){
+  const area = $('#results-area');
+  if(state.results.length === 0){
+    area.innerHTML = `
+      <div class="empty" style="grid-column:1/-1">
+        <div class="ico">🎬</div>
+        <h3>Henüz çıktı yok</h3>
+        <p>Solda parametreleri ayarla ve <b>Üretimi Başlat</b>'a bas — sonuçlar burada görünecek.</p>
+      </div>
+    `;
+    return;
+  }
+  area.innerHTML = '';
+  state.results.forEach(r => {
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    const media = document.createElement('div');
+    media.className = 'result-media';
+    if(r.type === 'video'){
+      media.innerHTML = `<video src="${r.url}" controls playsinline></video>`;
+    } else {
+      media.innerHTML = `<img src="${r.url}" alt="output">`;
+    }
+    const meta = document.createElement('div');
+    meta.className = 'result-meta';
+    const t = r.ts;
+    const ts = `${t.getHours().toString().padStart(2,'0')}:${t.getMinutes().toString().padStart(2,'0')}:${t.getSeconds().toString().padStart(2,'0')}`;
+    meta.innerHTML = `
+      <span class="ts">${ts}</span>
+      <span>· ${r.type}</span>
+      <span class="spacer"></span>
+      <a href="${r.url}" target="_blank" rel="noopener">Aç</a>
+      <a href="${r.url}" download>İndir</a>
+    `;
+    card.appendChild(media);
+    card.appendChild(meta);
+    area.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  EVENTS
+// ═══════════════════════════════════════════════════════════════════════════
+$$('#task-tabs .tab').forEach(t => t.addEventListener('click', () => selectTask(t.dataset.task)));
+$('#btn-new-account').addEventListener('click', async () => {
+  if(state.acctEmail){
+    const ok = await confirmModal('Yeni hesap oluştur?', 'Mevcut APIXO oturumu kapatılıp yenisi açılacak.');
+    if(!ok) return;
+  }
+  newAccount();
+});
+$('#btn-refresh').addEventListener('click', refreshBalance);
+$('#btn-generate').addEventListener('click', generate);
+$('#btn-clear').addEventListener('click', async () => {
+  if(state.results.length === 0) return;
+  const ok = await confirmModal('Çıktıları temizle?', 'Tüm üretilmiş çıktılar listeden silinecek (dosyalar bulutta kalır).');
+  if(ok){ state.results = []; renderResults(); }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════════════════
+(async () => {
+  state.models = await api('/api/models');
+  selectTask('video');
+  renderResults();
+  await whoami();
+  if(!state.acctEmail){
+    setTimeout(()=>toast('İlk üretim için sağ üstten <b>Yeni Hesap</b> oluştur.', 'warning', 6000), 600);
+  }
+})();
+</script>
+</body>
+</html>
