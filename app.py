@@ -247,50 +247,76 @@ def apixo_auto_login():
         "sec-fetch-site": "same-origin",
     })
 
-    # --- PROXY ARAMA BAŞLANGICI ---
-    print("\n[*] Kritik OTP gönderim isteği için proxy aranıyor...")
-    working_proxy = find_working_proxy(max_workers=30)
-    if working_proxy:
-        auth_proxies = {"http": working_proxy, "https": working_proxy}
-        print(f"[*] Proxy OTP tetikleme isteğinde kullanılacak: {working_proxy}")
-    else:
-        auth_proxies = None
-        print("[-] Proxy bulunamadı, isteğe proxysiz devam ediliyor.")
-    # --- PROXY ARAMA BİTİŞİ ---
+    # ════════════════════════════════════════════════════════════════════════════
+    #  DÖNGÜ: OTP GÖNDERİMİ İÇİN TEKRAR DENEME (RETRY) MEKANİZMASI
+    # ════════════════════════════════════════════════════════════════════════════
+    max_retries = 3  # Proxy patlarsa en fazla kaç farklı proxy denensin?
+    otp_sent_successfully = False
 
-    # 1. OTP Gönder (PROXY SADECE BU İSTEKTE KULLANILIYOR)
-    try:
-        r1 = s.post(
-            f"{base_url}/api/auth/otp/send",
-            json={"email": email, "fingerprint": fingerprint},
-            proxies=auth_proxies,  # <--- Proxy burada devreye giriyor
-            timeout=20
-        )
-        if not r1.json().get("success"):
-            return None, None, f"OTP gönderilemedi. Yanıt: {r1.text}"
-    except Exception as e:
-        return None, None, f"OTP gönderim isteği hatası (Proxy yavaş veya ölü olabilir): {e}"
+    for attempt in range(max_retries):
+        print(f"\n[*] OTP gönderim denemesi {attempt + 1}/{max_retries}...")
+        
+        # 1. Her denemede yeni bir çalışan proxy ara
+        working_proxy = find_working_proxy(max_workers=30)
+        if working_proxy:
+            auth_proxies = {"http": working_proxy, "https": working_proxy}
+            print(f"[*] Proxy OTP isteğinde kullanılacak: {working_proxy}")
+        else:
+            auth_proxies = None
+            print("[-] Çalışan proxy bulunamadı, bu deneme proxysiz yapılacak.")
 
-    # 2. OTP Bekle (Spamok üzerinden)
+        # 2. OTP Gönderimini dene
+        try:
+            r1 = s.post(
+                f"{base_url}/api/auth/otp/send",
+                json={"email": email, "fingerprint": fingerprint},
+                proxies=auth_proxies,
+                timeout=15  # Proxy yavaşsa 15 saniyede kesip yenisine geçsin
+            )
+            
+            # Eğer Apixo başarılı döndüyse döngüden çık
+            if r1.json().get("success"):
+                print("[+] OTP başarıyla gönderildi!")
+                otp_sent_successfully = True
+                break
+            else:
+                print(f"[-] Apixo hata döndürdü (IP engeli veya rate-limit). Yanıt: {r1.text}")
+                print("[*] Yeni bir proxy ile tekrar denenecek...")
+                
+        except Exception as e:
+            print(f"[-] İstek hatası (Proxy ölmüş veya yavaş): {e}")
+            print("[*] Yeni bir proxy ile tekrar denenecek...")
+        
+        # Döngü sırasındaki başarısız istekler için kısa bir bekleme
+        time.sleep(1)
+
+    # Eğer tüm denemeler başarısız olduysa ana sisteme hata dön
+    if not otp_sent_successfully:
+        return None, None, f"{max_retries} farklı proxy denemesine rağmen OTP kodu gönderilemedi."
+
+    # ════════════════════════════════════════════════════════════════════════════
+    #  SONRAKİ ADIMLAR (Mevcut IP üzerinden hızlıca devam eder)
+    # ════════════════════════════════════════════════════════════════════════════
+
+    # 3. OTP Bekle (Spamok üzerinden)
     print("[*] OTP kodu bekleniyor...")
     otp = temp.get_otp(email)
     if not otp:
         return None, None, "OTP timeout."
     print(f"[+] OTP kodu yakalandı: {otp}")
 
-    # 3. OTP Doğrula (Proxysiz, temiz IP)
-    r2 = s.post(f"{base_url}/api/auth/otp/verify",
-                json={"email": email, "otp": otp})
+    # 4. OTP Doğrula
+    r2 = s.post(f"{base_url}/api/auth/otp/verify", json={"email": email, "otp": otp})
     d2 = r2.json()
     if not d2.get("success"):
         return None, None, "OTP doğrulanamadı."
     temp_token = d2["tempToken"]
 
-    # 4. CSRF Al
+    # 5. CSRF Al
     r3 = s.get(f"{base_url}/api/auth/csrf")
     csrf_token = r3.json()["csrfToken"]
 
-    # 5. Callback (Kayıt tamamlama - Proxysiz)
+    # 6. Callback (Kayıt tamamlama)
     try:
         s.post(
             f"{base_url}/api/auth/callback/email-otp",
@@ -308,7 +334,7 @@ def apixo_auto_login():
     except Exception as e:
         return None, None, f"Callback isteği sırasında hata: {e}"
 
-    # 6. Session Al
+    # 7. Session Al
     r5 = s.get(f"{base_url}/api/auth/session")
     return s, r5.json(), None
 
