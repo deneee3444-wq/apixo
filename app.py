@@ -185,6 +185,7 @@ def apixo_auto_login():
 
     r1 = s.post(f"{base_url}/api/auth/otp/send",
                 json={"email": email, "fingerprint": fingerprint})
+    print(r1.json())
     if not r1.json().get("success"):
         return None, None, "OTP gönderilemedi."
 
