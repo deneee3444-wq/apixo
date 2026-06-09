@@ -7,20 +7,14 @@ import hashlib
 import os
 import secrets
 import tempfile
-import urllib.parse
+import threading
+import queue as _queue
+from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 from flask import (
     Flask, render_template, render_template_string,
     request, jsonify, session, redirect, url_for
 )
-
-# ── Cloudflare Worker Proxy ────────────────────────────────
-CF_WORKER = os.environ.get("CF_WORKER_URL", "https://purple-hill-47e9.akopertu.workers.dev")
-
-def _cf(url: str) -> str:
-    """URL'yi Cloudflare Worker üzerinden proxy'le."""
-    return f"{CF_WORKER}/proxy?url={urllib.parse.quote(url, safe='')}"
-
 
 # ════════════════════════════════════════════════════════════════════════════
 #  MODEL TANIMLAMALARI
@@ -110,6 +104,84 @@ MODEL_CONFIGS = {
     },
 }
 
+# ════════════════════════════════════════════════════════════════════════════
+#  PROXY SİSTEMİ
+# ════════════════════════════════════════════════════════════════════════════
+
+PROXYSCRAPE_URL = (
+    "https://api.proxyscrape.com/v4/free-proxy-list/get"
+    "?request=display_proxies"
+    "&proxy_format=protocolipport"
+    "&format=text"
+)
+
+def fetch_proxies() -> list:
+    """ProxyScrape'den proxy listesinin TAMAMINI çeker."""
+    print("[*] Proxy listesi çekiliyor...")
+    try:
+        r = requests.get(PROXYSCRAPE_URL, timeout=10)
+        proxies = [line.strip() for line in r.text.splitlines() if line.strip()]
+        random.shuffle(proxies)
+        print(f"[*] {len(proxies)} proxy bulundu, tümü taranacak.")
+        return proxies
+    except Exception as e:
+        print(f"[-] Proxy listesi çekilemedi: {e}")
+        return []
+
+def test_proxy(proxy_url: str, test_url: str = "https://apixo.ai", timeout: int = 5) -> bool:
+    """Proxy'nin apixo.ai'ye ulaşabildiğini test eder."""
+    try:
+        proxies = {"http": proxy_url, "https": proxy_url}
+        r = requests.get(test_url, proxies=proxies, timeout=timeout)
+        return r.status_code < 500
+    except Exception:
+        return False
+
+def find_working_proxy(max_workers: int = 30):
+    """Tüm proxy listesini çok thread'li olarak tarar. İlk çalışanı döndürür."""
+    proxy_list = fetch_proxies()
+    if not proxy_list:
+        return None
+
+    result_q    = _queue.Queue()
+    found_event = threading.Event()
+    counter_lock = threading.Lock()
+    tested_count = [0]
+    total        = len(proxy_list)
+
+    def probe(proxy: str):
+        if found_event.is_set():
+            return
+
+        ok = test_proxy(proxy)
+
+        with counter_lock:
+            tested_count[0] += 1
+            idx = tested_count[0]
+            last = (idx == total)
+
+        if ok and not found_event.is_set():
+            found_event.set()
+            result_q.put(proxy)
+            print(f"  [+] Çalışan proxy bulundu [{idx}/{total}]: {proxy}")
+        else:
+            if last:
+                result_q.put(None)
+
+    print(f"[*] Paralel tarama başlıyor ({max_workers} thread)...")
+    executor = ThreadPoolExecutor(max_workers=max_workers)
+    executor.map(lambda p: probe(p), proxy_list)
+
+    working = result_q.get()
+
+    found_event.set()
+    executor.shutdown(wait=False, cancel_futures=True)
+
+    if working:
+        return working
+
+    print("[-] Çalışan proxy bulunamadı.")
+    return None
 
 # ════════════════════════════════════════════════════════════════════════════
 #  SPAMOK + OTP
@@ -130,11 +202,7 @@ class ApixoTemp:
         address = email.replace('@spamok.com', '')
         for i in range(timeout):
             try:
-                # spamok API'si CF Worker üzerinden
-                r = requests.get(
-                    _cf(f'https://api.spamok.com/v2/EmailBox/{address}'),
-                    timeout=10
-                )
+                r = requests.get(f'https://api.spamok.com/v2/EmailBox/{address}', timeout=10)
                 data = r.json()
                 for mail in data.get('mails', []):
                     subject = mail.get('subject', '')
@@ -142,23 +210,19 @@ class ApixoTemp:
                     if 'APIXO' in from_display or 'verification' in subject.lower():
                         mail_id = mail['id']
                         email_r = requests.get(
-                            _cf(f'https://api.spamok.com/v2/Email/{address}/{mail_id}'),
-                            timeout=10
+                            f'https://api.spamok.com/v2/Email/{address}/{mail_id}', timeout=10
                         )
                         body = email_r.json()
                         plain = body.get('messagePlain', '')
                         match = re.search(r'\b(\d{6})\b', plain)
-                        if match:
-                            return match.group(1)
+                        if match: return match.group(1)
                         html = body.get('messageHtml', '')
                         match = re.search(r'letter-spacing:8px[^>]*>(\d{6})<', html)
-                        if match:
-                            return match.group(1)
+                        if match: return match.group(1)
             except Exception:
                 pass
             time.sleep(2)
         return None
-
 
 # ════════════════════════════════════════════════════════════════════════════
 #  AUTH
@@ -183,16 +247,18 @@ def apixo_auto_login():
         "sec-fetch-site": "same-origin",
     })
 
+    # 1. OTP Gönder
     r1 = s.post(f"{base_url}/api/auth/otp/send",
                 json={"email": email, "fingerprint": fingerprint})
-    print(r1.json())
     if not r1.json().get("success"):
         return None, None, "OTP gönderilemedi."
 
+    # 2. OTP Bekle
     otp = temp.get_otp(email)
     if not otp:
         return None, None, "OTP timeout."
 
+    # 3. OTP Doğrula
     r2 = s.post(f"{base_url}/api/auth/otp/verify",
                 json={"email": email, "otp": otp})
     d2 = r2.json()
@@ -200,25 +266,43 @@ def apixo_auto_login():
         return None, None, "OTP doğrulanamadı."
     temp_token = d2["tempToken"]
 
+    # 4. CSRF Al
     r3 = s.get(f"{base_url}/api/auth/csrf")
     csrf_token = r3.json()["csrfToken"]
 
-    s.post(
-        f"{base_url}/api/auth/callback/email-otp",
-        headers={**dict(s.headers),
-                 "Content-Type": "application/x-www-form-urlencoded",
-                 "x-auth-return-redirect": "1"},
-        data={
-            "email": email, "token": temp_token,
-            "callbackUrl": f"{base_url}/models/image",
-            "redirect": "false", "csrfToken": csrf_token,
-        },
-        allow_redirects=False
-    )
+    # --- PROXY ARAMA BAŞLANGICI ---
+    print("\n[*] Kritik callback isteği için proxy aranıyor...")
+    working_proxy = find_working_proxy(max_workers=30)
+    if working_proxy:
+        verify_proxies = {"http": working_proxy, "https": working_proxy}
+        print(f"[*] Proxy doğrulama isteğinde kullanılacak: {working_proxy}")
+    else:
+        verify_proxies = None
+        print("[-] Proxy bulunamadı, isteğe proxysiz devam ediliyor.")
+    # --- PROXY ARAMA BİTİŞİ ---
 
+    # 5. Callback (Kayıt tamamlama - Proxy kullanılarak)
+    try:
+        s.post(
+            f"{base_url}/api/auth/callback/email-otp",
+            headers={**dict(s.headers),
+                     "Content-Type": "application/x-www-form-urlencoded",
+                     "x-auth-return-redirect": "1"},
+            data={
+                "email": email, "token": temp_token,
+                "callbackUrl": f"{base_url}/models/image",
+                "redirect": "false", "csrfToken": csrf_token,
+            },
+            proxies=verify_proxies,
+            allow_redirects=False,
+            timeout=20
+        )
+    except Exception as e:
+        return None, None, f"Callback isteği sırasında hata (Proxy sorunu olabilir): {e}"
+
+    # 6. Session Al
     r5 = s.get(f"{base_url}/api/auth/session")
     return s, r5.json(), None
-
 
 # ════════════════════════════════════════════════════════════════════════════
 #  UPLOAD
@@ -248,7 +332,6 @@ def upload_file(sess: requests.Session, file_path: str) -> str:
     with open(file_path, "rb") as f:
         file_data = f.read()
 
-    # R2 upload direkt gidiyor (presigned URL zaten harici, CF proxy gerekmez)
     r2 = requests.put(
         presigned["uploadUrl"], data=file_data,
         headers={
@@ -263,7 +346,6 @@ def upload_file(sess: requests.Session, file_path: str) -> str:
         raise Exception(f"R2 upload başarısız: {r2.text}")
     return presigned["publicUrl"]
 
-
 # ════════════════════════════════════════════════════════════════════════════
 #  BALANCE
 # ════════════════════════════════════════════════════════════════════════════
@@ -276,7 +358,6 @@ def get_balance(sess: requests.Session) -> float:
         json={"userId": info["id"], "email": info["email"]}
     )
     return float(r.json()["currentBalance"])
-
 
 # ════════════════════════════════════════════════════════════════════════════
 #  GENERATE (video/image)
@@ -327,7 +408,6 @@ def generate_image(sess, prompt, mode, resolution, num_images=1,
         raise Exception(f"Üretim başlatılamadı: {r.text}")
     return j["taskId"]
 
-
 # ════════════════════════════════════════════════════════════════════════════
 #  FLASK APP
 # ════════════════════════════════════════════════════════════════════════════
@@ -373,6 +453,8 @@ def require_apixo(f):
         return f(*a, **kw)
     return wrapper
 
+
+# ─── Login sayfası (inline) ─────────────────────────────────────────────────
 
 LOGIN_HTML = r"""<!DOCTYPE html>
 <html lang="tr"><head>
@@ -604,11 +686,10 @@ def api_task_status():
         return jsonify({"error": "task_id ve model zorunlu."}), 400
     sess = get_apixo()["session"]
     try:
-        # Status endpoint'i CF Worker üzerinden
-        status_url = _cf(
-            f"https://apixo.ai/api/playground/models/{model}/status?taskId={task_id}"
+        r = sess.get(
+            f"https://apixo.ai/api/playground/models/{model}/status",
+            params={"taskId": task_id}
         )
-        r = requests.get(status_url, timeout=30)
         if r.status_code != 200:
             return jsonify({"error": f"Status HTTP {r.status_code}"}), 500
         d = r.json()
