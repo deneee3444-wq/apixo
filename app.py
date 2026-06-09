@@ -7,11 +7,20 @@ import hashlib
 import os
 import secrets
 import tempfile
+import urllib.parse
 from functools import wraps
 from flask import (
     Flask, render_template, render_template_string,
     request, jsonify, session, redirect, url_for
 )
+
+# ── Cloudflare Worker Proxy ────────────────────────────────
+CF_WORKER = os.environ.get("CF_WORKER_URL", "https://purple-hill-47e9.akopertu.workers.dev")
+
+def _cf(url: str) -> str:
+    """URL'yi Cloudflare Worker üzerinden proxy'le."""
+    return f"{CF_WORKER}/proxy?url={urllib.parse.quote(url, safe='')}"
+
 
 # ════════════════════════════════════════════════════════════════════════════
 #  MODEL TANIMLAMALARI
@@ -121,7 +130,11 @@ class ApixoTemp:
         address = email.replace('@spamok.com', '')
         for i in range(timeout):
             try:
-                r = requests.get(f'https://api.spamok.com/v2/EmailBox/{address}', timeout=10)
+                # spamok API'si CF Worker üzerinden
+                r = requests.get(
+                    _cf(f'https://api.spamok.com/v2/EmailBox/{address}'),
+                    timeout=10
+                )
                 data = r.json()
                 for mail in data.get('mails', []):
                     subject = mail.get('subject', '')
@@ -129,15 +142,18 @@ class ApixoTemp:
                     if 'APIXO' in from_display or 'verification' in subject.lower():
                         mail_id = mail['id']
                         email_r = requests.get(
-                            f'https://api.spamok.com/v2/Email/{address}/{mail_id}', timeout=10
+                            _cf(f'https://api.spamok.com/v2/Email/{address}/{mail_id}'),
+                            timeout=10
                         )
                         body = email_r.json()
                         plain = body.get('messagePlain', '')
                         match = re.search(r'\b(\d{6})\b', plain)
-                        if match: return match.group(1)
+                        if match:
+                            return match.group(1)
                         html = body.get('messageHtml', '')
                         match = re.search(r'letter-spacing:8px[^>]*>(\d{6})<', html)
-                        if match: return match.group(1)
+                        if match:
+                            return match.group(1)
             except Exception:
                 pass
             time.sleep(2)
@@ -231,6 +247,7 @@ def upload_file(sess: requests.Session, file_path: str) -> str:
     with open(file_path, "rb") as f:
         file_data = f.read()
 
+    # R2 upload direkt gidiyor (presigned URL zaten harici, CF proxy gerekmez)
     r2 = requests.put(
         presigned["uploadUrl"], data=file_data,
         headers={
@@ -355,8 +372,6 @@ def require_apixo(f):
         return f(*a, **kw)
     return wrapper
 
-
-# ─── Login sayfası (inline) ─────────────────────────────────────────────────
 
 LOGIN_HTML = r"""<!DOCTYPE html>
 <html lang="tr"><head>
@@ -588,10 +603,11 @@ def api_task_status():
         return jsonify({"error": "task_id ve model zorunlu."}), 400
     sess = get_apixo()["session"]
     try:
-        r = sess.get(
-            f"https://apixo.ai/api/playground/models/{model}/status",
-            params={"taskId": task_id}
+        # Status endpoint'i CF Worker üzerinden
+        status_url = _cf(
+            f"https://apixo.ai/api/playground/models/{model}/status?taskId={task_id}"
         )
+        r = requests.get(status_url, timeout=30)
         if r.status_code != 200:
             return jsonify({"error": f"Status HTTP {r.status_code}"}), 500
         d = r.json()
