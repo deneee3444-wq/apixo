@@ -247,18 +247,38 @@ def apixo_auto_login():
         "sec-fetch-site": "same-origin",
     })
 
-    # 1. OTP Gönder
-    r1 = s.post(f"{base_url}/api/auth/otp/send",
-                json={"email": email, "fingerprint": fingerprint})
-    if not r1.json().get("success"):
-        return None, None, "OTP gönderilemedi."
+    # --- PROXY ARAMA BAŞLANGICI ---
+    print("\n[*] Kritik OTP gönderim isteği için proxy aranıyor...")
+    working_proxy = find_working_proxy(max_workers=30)
+    if working_proxy:
+        auth_proxies = {"http": working_proxy, "https": working_proxy}
+        print(f"[*] Proxy OTP tetikleme isteğinde kullanılacak: {working_proxy}")
+    else:
+        auth_proxies = None
+        print("[-] Proxy bulunamadı, isteğe proxysiz devam ediliyor.")
+    # --- PROXY ARAMA BİTİŞİ ---
 
-    # 2. OTP Bekle
+    # 1. OTP Gönder (PROXY SADECE BU İSTEKTE KULLANILIYOR)
+    try:
+        r1 = s.post(
+            f"{base_url}/api/auth/otp/send",
+            json={"email": email, "fingerprint": fingerprint},
+            proxies=auth_proxies,  # <--- Proxy burada devreye giriyor
+            timeout=20
+        )
+        if not r1.json().get("success"):
+            return None, None, f"OTP gönderilemedi. Yanıt: {r1.text}"
+    except Exception as e:
+        return None, None, f"OTP gönderim isteği hatası (Proxy yavaş veya ölü olabilir): {e}"
+
+    # 2. OTP Bekle (Spamok üzerinden)
+    print("[*] OTP kodu bekleniyor...")
     otp = temp.get_otp(email)
     if not otp:
         return None, None, "OTP timeout."
+    print(f"[+] OTP kodu yakalandı: {otp}")
 
-    # 3. OTP Doğrula
+    # 3. OTP Doğrula (Proxysiz, temiz IP)
     r2 = s.post(f"{base_url}/api/auth/otp/verify",
                 json={"email": email, "otp": otp})
     d2 = r2.json()
@@ -270,18 +290,7 @@ def apixo_auto_login():
     r3 = s.get(f"{base_url}/api/auth/csrf")
     csrf_token = r3.json()["csrfToken"]
 
-    # --- PROXY ARAMA BAŞLANGICI ---
-    print("\n[*] Kritik callback isteği için proxy aranıyor...")
-    working_proxy = find_working_proxy(max_workers=30)
-    if working_proxy:
-        verify_proxies = {"http": working_proxy, "https": working_proxy}
-        print(f"[*] Proxy doğrulama isteğinde kullanılacak: {working_proxy}")
-    else:
-        verify_proxies = None
-        print("[-] Proxy bulunamadı, isteğe proxysiz devam ediliyor.")
-    # --- PROXY ARAMA BİTİŞİ ---
-
-    # 5. Callback (Kayıt tamamlama - Proxy kullanılarak)
+    # 5. Callback (Kayıt tamamlama - Proxysiz)
     try:
         s.post(
             f"{base_url}/api/auth/callback/email-otp",
@@ -293,12 +302,11 @@ def apixo_auto_login():
                 "callbackUrl": f"{base_url}/models/image",
                 "redirect": "false", "csrfToken": csrf_token,
             },
-            proxies=verify_proxies,
             allow_redirects=False,
-            timeout=20
+            timeout=15
         )
     except Exception as e:
-        return None, None, f"Callback isteği sırasında hata (Proxy sorunu olabilir): {e}"
+        return None, None, f"Callback isteği sırasında hata: {e}"
 
     # 6. Session Al
     r5 = s.get(f"{base_url}/api/auth/session")
