@@ -453,6 +453,104 @@ APP_PASSWORD = "123"
 # Flask session başına apixo session (process-memory)
 APIXO_STORE: dict[str, dict] = {}
 
+# ── RAM Storage ────────────────────────────────────────────────────────────
+import uuid as _uuid
+
+jobs_store = {}
+jobs_lock = threading.Lock()
+
+prompts_store = {}
+prompts_lock = threading.Lock()
+
+gallery_store = []
+gallery_lock = threading.Lock()
+
+
+def _run_job(job_id, data, apixo_sess):
+    """Background worker: generate + poll, update jobs_store."""
+    def log(msg):
+        with jobs_lock:
+            if job_id in jobs_store:
+                jobs_store[job_id]['logs'].append(msg)
+
+    def update(upd):
+        with jobs_lock:
+            if job_id in jobs_store:
+                jobs_store[job_id].update(upd)
+
+    try:
+        update({'status': 'generating'})
+        log('Üretim başlatılıyor...')
+        task_type = data.get('task_type')
+        sess = apixo_sess
+
+        if task_type == 'video':
+            model = data.get('model', 'wan-2-5-video')
+            task_id = generate_video(
+                sess,
+                prompt=data.get('prompt', ''),
+                mode=data.get('mode', 'text-to-video'),
+                resolution=data.get('resolution', '480p'),
+                duration=int(data.get('duration', 5)),
+                aspect_ratio=data.get('aspect_ratio', '16:9'),
+                enable_prompt_expansion=bool(data.get('enable_prompt_expansion', False)),
+                image_url=data.get('image_url') or None,
+                negative_prompt=data.get('negative_prompt', ''),
+                seed=data.get('seed', ''),
+                audio_url=data.get('audio_url') or None,
+                model=model,
+            )
+        elif task_type == 'image':
+            model = data.get('model', 'wan-2-7-image')
+            task_id = generate_image(
+                sess,
+                prompt=data.get('prompt', ''),
+                mode=data.get('mode', 'omni-image'),
+                resolution=data.get('resolution', '2k'),
+                num_images=int(data.get('num_images', 1)),
+                image_urls=data.get('image_urls') or [],
+                model=model,
+                negative_prompt=data.get('negative_prompt', ''),
+                seed=data.get('seed', ''),
+            )
+        else:
+            update({'status': 'error'})
+            log('Geçersiz task_type')
+            return
+
+        log(f'Task ID: {task_id}')
+        update({'status': 'polling', 'apixo_task_id': task_id})
+
+        for i in range(150):
+            time.sleep(4)
+            try:
+                r = sess.get(
+                    f'https://apixo.ai/api/playground/models/{model}/status',
+                    params={'taskId': task_id}
+                )
+                d = r.json()
+                st = d.get('state')
+                elapsed = (i + 1) * 4
+                log(f'State: {st} ({elapsed}s)')
+                if st == 'success':
+                    outputs = d.get('resultUrls') or ([d.get('resultUrl')] if d.get('resultUrl') else [])
+                    outputs = [u for u in outputs if u]
+                    update({'status': 'done', 'result_urls': outputs})
+                    log(f'Tamamlandı! {len(outputs)} çıktı')
+                    return
+                elif st == 'failed':
+                    update({'status': 'error'})
+                    log(f'Başarısız: {d.get("error", "bilinmeyen")}')
+                    return
+            except Exception as e:
+                log(f'Poll hatası: {e}')
+
+        update({'status': 'error'})
+        log('Zaman aşımı (10 dk)')
+    except Exception as e:
+        update({'status': 'error'})
+        log(f'Hata: {e}')
+
 
 def get_sid():
     if 'sid' not in session:
@@ -738,6 +836,169 @@ def api_task_status():
             "error": d.get('error'),
             "cost_time": d.get('costTime', 0),
         })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ── JOB SYSTEM ─────────────────────────────────────────────────────────────
+
+@app.route('/api/start-job', methods=['POST'])
+@require_app_login
+@require_apixo
+def api_start_job():
+    data = request.get_json(force=True)
+    job_id = str(_uuid.uuid4())
+    with jobs_lock:
+        jobs_store[job_id] = {
+            'status': 'starting',
+            'logs': [],
+            'result_urls': [],
+            'task_type': data.get('task_type', 'video'),
+            'model': data.get('model', ''),
+            'mode': data.get('mode', ''),
+            'prompt': data.get('prompt', ''),
+            'created_at': time.time(),
+        }
+    sess = get_apixo()["session"]
+    t = threading.Thread(target=_run_job, args=(job_id, data, sess), daemon=True)
+    t.start()
+    return jsonify({"job_id": job_id})
+
+
+@app.route('/api/job-status/<job_id>')
+@require_app_login
+def api_job_status(job_id):
+    with jobs_lock:
+        if job_id in jobs_store:
+            return jsonify(jobs_store[job_id])
+    return jsonify({"error": "Job bulunamadı"}), 404
+
+
+@app.route('/api/jobs')
+@require_app_login
+def api_jobs():
+    with jobs_lock:
+        return jsonify(dict(jobs_store))
+
+
+@app.route('/api/delete-job/<job_id>', methods=['DELETE'])
+@require_app_login
+def api_delete_job(job_id):
+    with jobs_lock:
+        if job_id in jobs_store:
+            del jobs_store[job_id]
+            return jsonify({"success": True})
+    return jsonify({"error": "Job bulunamadı"}), 404
+
+
+# ── PROMPT LIBRARY ─────────────────────────────────────────────────────────
+
+@app.route('/api/prompts', methods=['GET'])
+@require_app_login
+def api_get_prompts():
+    with prompts_lock:
+        result = sorted(prompts_store.values(), key=lambda p: p['timestamp'], reverse=True)
+    return jsonify(result)
+
+
+@app.route('/api/prompts', methods=['POST'])
+@require_app_login
+def api_save_prompt():
+    data = request.get_json(force=True)
+    text = (data.get('text') or '').strip()
+    if not text:
+        return jsonify({"error": "Prompt boş olamaz"}), 400
+    pid = str(_uuid.uuid4())
+    entry = {"id": pid, "text": text, "timestamp": int(time.time() * 1000)}
+    with prompts_lock:
+        prompts_store[pid] = entry
+    return jsonify(entry)
+
+
+@app.route('/api/prompts/<pid>', methods=['DELETE'])
+@require_app_login
+def api_delete_prompt(pid):
+    with prompts_lock:
+        if pid in prompts_store:
+            del prompts_store[pid]
+            return jsonify({"success": True})
+    return jsonify({"error": "Prompt bulunamadı"}), 404
+
+
+# ── GALLERY ────────────────────────────────────────────────────────────────
+
+@app.route('/api/gallery', methods=['GET'])
+@require_app_login
+def api_get_gallery():
+    with gallery_lock:
+        return jsonify(list(gallery_store))
+
+
+@app.route('/api/gallery', methods=['POST'])
+@require_app_login
+def api_add_gallery():
+    data = request.get_json(force=True)
+    if not data:
+        return jsonify({"error": "Veri eksik"}), 400
+    with gallery_lock:
+        gallery_store[:] = [i for i in gallery_store if i.get('id') != data.get('id')]
+        gallery_store.insert(0, data)
+        if len(gallery_store) > 200:
+            gallery_store[:] = gallery_store[:200]
+    return jsonify({"success": True})
+
+
+@app.route('/api/gallery/<item_id>', methods=['DELETE'])
+@require_app_login
+def api_delete_gallery(item_id):
+    with gallery_lock:
+        before = len(gallery_store)
+        gallery_store[:] = [i for i in gallery_store if i.get('id') != item_id]
+        if len(gallery_store) < before:
+            return jsonify({"success": True})
+    return jsonify({"error": "Öğe bulunamadı"}), 404
+
+
+@app.route('/api/gallery/clear', methods=['DELETE'])
+@require_app_login
+def api_clear_gallery():
+    with gallery_lock:
+        gallery_store.clear()
+    return jsonify({"success": True})
+
+
+# ── MEDIA PROXY ────────────────────────────────────────────────────────────
+
+@app.route('/api/proxy-media')
+@require_app_login
+def api_proxy_media():
+    url = request.args.get('url', '')
+    dl = request.args.get('dl', '0') == '1'
+    if not url:
+        return jsonify({"error": "URL gerekli"}), 400
+    range_header = request.headers.get('Range', None)
+    req_headers = {}
+    if range_header:
+        req_headers['Range'] = range_header
+    try:
+        from flask import Response
+        resp = requests.get(url, headers=req_headers, stream=True, timeout=60)
+        response_headers = {
+            'Content-Type': resp.headers.get('content-type', 'application/octet-stream'),
+            'Accept-Ranges': 'bytes',
+        }
+        if 'Content-Length' in resp.headers:
+            response_headers['Content-Length'] = resp.headers['Content-Length']
+        if 'Content-Range' in resp.headers:
+            response_headers['Content-Range'] = resp.headers['Content-Range']
+        if dl:
+            response_headers['Content-Disposition'] = 'attachment; filename="download"'
+
+        def gen():
+            for chunk in resp.iter_content(chunk_size=65536):
+                yield chunk
+
+        return Response(gen(), status=resp.status_code, headers=response_headers)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
