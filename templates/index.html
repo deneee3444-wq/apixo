@@ -210,7 +210,177 @@ header.topbar{
 .generate-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 14px 40px rgba(124,92,255,.4)}
 .generate-btn:disabled{opacity:.5;cursor:not-allowed}
 
-/* ═══════════ RESULTS ═══════════ */
+/* ═══════════ JOB CARDS ═══════════ */
+.jobs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.job-card{
+  background:var(--card-2);border:1px solid var(--border);border-radius:var(--r-lg);
+  overflow:hidden;animation:rise .4s cubic-bezier(.2,.8,.2,1);transition:border-color .2s;
+}
+.job-card:hover{border-color:var(--border-strong)}
+.job-thumb{aspect-ratio:16/9;background:#000;position:relative;overflow:hidden}
+.job-thumb img,.job-thumb video{width:100%;height:100%;object-fit:cover;display:block}
+.job-thumb video{object-fit:contain}
+.job-status-badge{
+  position:absolute;top:8px;left:8px;font-family:'JetBrains Mono',monospace;
+  font-size:11px;letter-spacing:.6px;padding:4px 10px;border-radius:6px;
+  text-transform:uppercase;font-weight:600;pointer-events:none;
+}
+.badge-running{background:rgba(124,92,255,.15);color:var(--accent);border:1px solid rgba(124,92,255,.3)}
+.badge-done{background:rgba(46,204,113,.15);color:var(--success);border:1px solid rgba(46,204,113,.3)}
+.badge-error{background:rgba(255,85,119,.15);color:var(--danger);border:1px solid rgba(255,85,119,.3)}
+.job-progress{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.08)}
+.job-progress-fill{height:100%;background:var(--grad-2);transition:width .5s ease;box-shadow:0 0 8px rgba(124,92,255,.5)}
+.job-body{padding:14px}
+.prompt-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px}
+.job-prompt{font-size:13px;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
+.copy-prompt-btn{background:none;border:none;color:var(--text-mute);cursor:pointer;font-size:14px;padding:2px 4px;flex-shrink:0;transition:.15s;line-height:1.5}
+.copy-prompt-btn:hover{color:var(--accent);transform:scale(1.15)}
+.job-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.meta-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-mute);background:rgba(8,9,16,.5);padding:3px 8px;border-radius:6px;border:1px solid var(--border)}
+.job-log{background:rgba(8,9,16,.5);border-radius:8px;padding:8px 10px;max-height:80px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.log-line{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-mute);line-height:1.8}
+.log-line.latest{color:var(--accent)}
+.btn-download{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:10px;margin-top:10px;
+  background:transparent;border:1px solid var(--accent);color:var(--accent);
+  border-radius:var(--r-md);font-family:'JetBrains Mono',monospace;
+  font-size:12px;letter-spacing:.4px;text-decoration:none;cursor:pointer;transition:.2s;
+}
+.btn-download:hover{background:linear-gradient(135deg,rgba(124,92,255,.15),rgba(0,212,255,.1));border-color:var(--accent-2)}
+.expand-btn,.job-delete-btn{
+  position:absolute;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);
+  border:1px solid rgba(255,255,255,.15);color:#fff;
+  width:28px;height:28px;border-radius:8px;cursor:pointer;
+  font-size:13px;display:flex;align-items:center;justify-content:center;transition:.2s;
+}
+.expand-btn{bottom:8px;right:8px}
+.expand-btn:hover{background:var(--accent);color:#000;border-color:var(--accent)}
+.job-delete-btn{top:8px;right:8px;border-color:rgba(255,85,119,.35);color:rgba(255,85,119,.75)}
+.job-delete-btn:hover{background:var(--danger);color:#fff;border-color:var(--danger)}
+
+/* ═══════════ SEND-TO ═══════════ */
+.send-to-wrap{position:absolute;bottom:8px;left:8px;z-index:4}
+.send-to-btn{
+  background:rgba(0,0,0,.65);backdrop-filter:blur(4px);
+  border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.75);
+  width:28px;height:28px;border-radius:8px;cursor:pointer;
+  font-size:13px;display:flex;align-items:center;justify-content:center;transition:.2s;
+  font-family:'JetBrains Mono',monospace;
+}
+.send-to-btn:hover{background:rgba(124,92,255,.2);border-color:var(--accent);color:var(--accent)}
+.send-to-portal{
+  position:fixed;background:var(--bg-3);border:1px solid var(--border);
+  border-radius:var(--r-md);padding:6px 0;min-width:180px;
+  box-shadow:0 12px 32px rgba(0,0,0,.6);z-index:9000;
+}
+.send-to-portal-item{
+  display:block;width:100%;padding:10px 14px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;
+  color:var(--text-dim);background:none;border:none;cursor:pointer;
+  text-align:left;transition:.12s;white-space:nowrap;
+}
+.send-to-portal-item:hover{color:var(--accent);background:rgba(124,92,255,.08)}
+
+/* ═══════════ RESULTS TABS ═══════════ */
+.results-tabs{
+  display:flex;gap:4px;padding:4px;background:rgba(8,9,16,.6);
+  border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:18px;
+}
+.results-tab{
+  flex:1;padding:10px 12px;border-radius:8px;font-size:12px;font-weight:500;
+  cursor:pointer;text-align:center;transition:.2s;color:var(--text-dim);
+  display:flex;align-items:center;justify-content:center;gap:6px;user-select:none;
+  background:none;border:none;font-family:inherit;
+}
+.results-tab:hover{color:var(--text)}
+.results-tab.active{
+  background:var(--grad-2);color:#fff;font-weight:600;
+  box-shadow:0 4px 14px rgba(124,92,255,.25);
+}
+.rtab-count{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  background:rgba(255,255,255,.1);padding:1px 6px;border-radius:6px;
+  min-width:16px;text-align:center;
+}
+.results-tab.active .rtab-count{background:rgba(255,255,255,.2)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ═══════════ PROMPT LIBRARY ═══════════ */
+.plib-header{display:flex;gap:10px;margin-bottom:14px}
+.plib-input{
+  flex:1;padding:10px 14px;font-size:13px;font-family:inherit;
+  background:rgba(8,9,16,.55);border:1px solid var(--border);
+  border-radius:var(--r-md);color:var(--text);outline:none;transition:.18s;
+}
+.plib-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,92,255,.16)}
+.plib-save-btn{
+  padding:10px 18px;font-size:13px;font-weight:600;font-family:inherit;
+  background:var(--grad-2);border:none;border-radius:var(--r-md);color:#fff;
+  cursor:pointer;white-space:nowrap;transition:.2s;
+}
+.plib-save-btn:hover{box-shadow:0 4px 16px rgba(124,92,255,.3)}
+.plib-list{display:flex;flex-direction:column;gap:10px}
+.plib-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);
+  padding:12px 14px;display:flex;align-items:flex-start;gap:10px;transition:.15s;
+}
+.plib-card:hover{border-color:var(--border-strong)}
+.plib-text{flex:1;font-size:13px;color:var(--text);line-height:1.5;word-break:break-word}
+.plib-actions{display:flex;gap:6px;flex-shrink:0}
+.plib-act-btn{
+  font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 10px;
+  border-radius:6px;border:1px solid var(--border);background:rgba(8,9,16,.5);
+  color:var(--text-mute);cursor:pointer;transition:.12s;white-space:nowrap;
+}
+.plib-act-btn.use{border-color:rgba(124,92,255,.4);color:var(--accent)}
+.plib-act-btn.use:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.plib-act-btn.del:hover{border-color:var(--danger);color:var(--danger)}
+
+/* ═══════════ EXPAND MODAL ═══════════ */
+#expand-modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(12px);
+  z-index:150;display:none;align-items:center;justify-content:center;
+  flex-direction:column;gap:12px;
+}
+#expand-modal.show{display:flex}
+.expand-close{
+  position:fixed;top:16px;right:16px;
+  background:rgba(20,22,35,.9);border:1px solid rgba(255,255,255,.18);
+  color:#fff;width:36px;height:36px;border-radius:10px;cursor:pointer;
+  font-size:15px;display:flex;align-items:center;justify-content:center;
+  transition:.2s;z-index:151;
+}
+.expand-close:hover{background:var(--danger);border-color:var(--danger)}
+.expand-inner{
+  width:88vw;max-width:1080px;aspect-ratio:16/9;background:#000;
+  border-radius:var(--r-lg);overflow:hidden;
+  box-shadow:0 0 80px rgba(0,0,0,.8);animation:rise .25s cubic-bezier(.34,1.56,.64,1);
+}
+.expand-inner img,.expand-inner video{width:100%;height:100%;object-fit:contain;display:block}
+.frame-bar{
+  display:flex;align-items:center;gap:12px;
+  width:88vw;max-width:1080px;padding:10px 14px;
+  background:rgba(20,22,35,.85);backdrop-filter:blur(10px);
+  border:1px solid var(--border);border-radius:var(--r-md);
+}
+.frame-time{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-mute);min-width:90px}
+.capture-btn{
+  background:linear-gradient(135deg,rgba(124,92,255,.12),rgba(0,212,255,.08));
+  border:1px solid rgba(124,92,255,.35);color:var(--accent);
+  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.4px;
+  padding:7px 14px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:.2s;
+}
+.capture-btn:hover{background:var(--grad-2);color:#fff;border-color:transparent}
+.capture-btn:disabled{opacity:.5;cursor:wait}
+.gallery-date{
+  position:absolute;bottom:8px;right:40px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  color:rgba(255,255,255,.6);pointer-events:none;text-shadow:0 1px 4px rgba(0,0,0,.9);
+}
+
+/* ═══════════ RESULTS HEADER ═══════════ */
 .results-header{
   display:flex;align-items:center;justify-content:space-between;
   margin-bottom:18px;flex-wrap:wrap;gap:10px;
@@ -219,31 +389,6 @@ header.topbar{
   font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px;
   display:flex;align-items:center;gap:10px;
 }
-.results-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-  gap:16px;
-}
-.result-card{
-  background:var(--card-2);border:1px solid var(--border);border-radius:var(--r-lg);
-  overflow:hidden;display:flex;flex-direction:column;
-  animation:rise .4s cubic-bezier(.2,.8,.2,1);
-}
-.result-media{aspect-ratio:16/9;background:#000;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.result-media img, .result-media video{width:100%;height:100%;object-fit:contain;display:block}
-.result-meta{
-  padding:12px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-dim);
-  border-top:1px solid var(--border);
-}
-.result-meta .ts{font-family:'JetBrains Mono',monospace}
-.result-meta .spacer{flex:1}
-.result-meta a{
-  text-decoration:none;color:var(--text-dim);padding:6px 10px;border-radius:8px;
-  border:1px solid var(--border);transition:.2s;
-}
-.result-meta a:hover{color:var(--text);border-color:var(--border-strong)}
-
-@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-
 .empty{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:60px 20px;color:var(--text-mute);text-align:center;gap:14px;
@@ -253,7 +398,7 @@ header.topbar{
 .empty h3{font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--text-dim);font-size:16px}
 .empty p{font-size:13px;max-width:300px;line-height:1.6}
 
-/* ═══════════ STATUS / PROGRESS ═══════════ */
+/* ═══════════ STATUS ═══════════ */
 .status-card{
   margin-bottom:18px;padding:16px 18px;border-radius:var(--r-lg);
   background:linear-gradient(135deg,rgba(124,92,255,.1),rgba(0,212,255,.06));
@@ -266,9 +411,6 @@ header.topbar{
   animation:spin .8s linear infinite;flex-shrink:0;
 }
 @keyframes spin{to{transform:rotate(360deg)}}
-.status-card .txt{flex:1}
-.status-card .head{font-weight:600;font-size:14px;color:#fff;margin-bottom:2px}
-.status-card .sub{font-size:12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
 
 /* ═══════════ TOAST ═══════════ */
 #toasts{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:10px;max-width:360px}
@@ -284,6 +426,7 @@ header.topbar{
 .toast.error{border-color:rgba(255,85,119,.4)}
 .toast.warning{border-color:rgba(255,170,51,.4)}
 @keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
 /* ═══════════ MODAL ═══════════ */
 #modal{
@@ -293,8 +436,7 @@ header.topbar{
 #modal.show{display:flex}
 .modal-box{
   background:var(--bg-2);border:1px solid var(--border);border-radius:var(--r-xl);
-  padding:28px;max-width:420px;width:100%;
-  animation:rise .3s;
+  padding:28px;max-width:420px;width:100%;animation:rise .3s;
 }
 .modal-box h3{font-family:'Space Grotesk',sans-serif;margin-bottom:8px;font-size:18px}
 .modal-box p{color:var(--text-dim);font-size:14px;margin-bottom:20px;line-height:1.5}
@@ -308,16 +450,22 @@ header.topbar{
   .brand{font-size:17px}
   .chip{padding:6px 12px;font-size:12px}
   .btn{padding:8px 12px;font-size:12px}
-  .results-grid{grid-template-columns:1fr}
+  .jobs-grid{grid-template-columns:1fr}
+  .expand-inner{width:96vw}
+  .frame-bar{width:96vw;flex-wrap:wrap;gap:8px}
+  .plib-header{flex-direction:column}
 }
 @media (max-width: 560px){
   .topbar .spacer{display:none}
   .field-row, .field-row-3{grid-template-columns:1fr}
   .brand-text{display:none}
+  .expand-inner{width:100vw;border-radius:0}
+  .frame-bar{width:100vw;border-radius:0;padding:8px}
 }
 </style>
 </head>
 <body>
+<canvas id="frame-canvas" style="display:none"></canvas>
 <div class="app">
 
   <!-- ═══════ TOP BAR ═══════ -->
@@ -396,21 +544,74 @@ header.topbar{
 
     <!-- RESULTS PANEL -->
     <section class="panel tall" id="results-panel">
-      <div class="results-header">
-        <div class="results-title">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
-          Çıktılar
-        </div>
-        <button class="btn ghost" id="btn-clear" style="font-size:12px">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-          Temizle
-        </button>
+      <div class="results-tabs" id="results-tabs">
+        <button class="results-tab active" data-rtab="jobs">🎬 Üretimler <span class="rtab-count" id="jobs-count">0</span></button>
+        <button class="results-tab" data-rtab="gallery">🗂️ Galeri <span class="rtab-count" id="gallery-count">0</span></button>
+        <button class="results-tab" data-rtab="prompts">📝 Promptlar <span class="rtab-count" id="prompts-count">0</span></button>
       </div>
 
-      <div id="status-area"></div>
+      <!-- Jobs Tab -->
+      <div class="tab-panel active" id="tab-jobs">
+        <div class="results-header">
+          <div class="results-title">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
+            Üretimler
+          </div>
+          <button class="btn ghost" id="btn-clear-jobs" style="font-size:12px">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            Temizle
+          </button>
+        </div>
+        <div id="status-area"></div>
+        <div class="empty" id="jobs-empty">
+          <div class="ico">🎬</div>
+          <h3>Henüz üretim yok</h3>
+          <p>Solda parametreleri ayarla ve <b>Üretimi Başlat</b>'a bas — sonuçlar burada görünecek.</p>
+        </div>
+        <div id="jobs-grid" class="jobs-grid"></div>
+      </div>
 
-      <div id="results-area" class="results-grid"></div>
+      <!-- Gallery Tab -->
+      <div class="tab-panel" id="tab-gallery">
+        <div class="results-header">
+          <div class="results-title">🗂️ Galeri</div>
+          <button class="btn ghost" id="btn-clear-gallery" style="font-size:12px">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            Temizle
+          </button>
+        </div>
+        <div class="empty" id="gallery-empty">
+          <div class="ico">🗂️</div>
+          <h3>Galeri boş</h3>
+          <p>Tamamlanan üretimler otomatik olarak galeriye eklenir.</p>
+        </div>
+        <div id="gallery-grid" class="jobs-grid"></div>
+      </div>
+
+      <!-- Prompts Tab -->
+      <div class="tab-panel" id="tab-prompts">
+        <div class="plib-header">
+          <input type="text" class="plib-input" id="plib-input" placeholder="Prompt girin veya mevcut promptı kaydedin...">
+          <button class="plib-save-btn" id="plib-save-btn">Kaydet</button>
+        </div>
+        <div class="empty" id="prompts-empty">
+          <div class="ico">📝</div>
+          <h3>Kayıtlı prompt yok</h3>
+          <p>Yukarıdan prompt ekleyin, dilediğinizde tek tıkla kullanın.</p>
+        </div>
+        <div class="plib-list" id="plib-list"></div>
+      </div>
     </section>
+  </div>
+</div>
+
+<!-- EXPAND MODAL -->
+<div id="expand-modal">
+  <button class="expand-close" id="expand-close">✕</button>
+  <div class="expand-inner" id="expand-inner"></div>
+  <div class="frame-bar" id="frame-bar" style="display:none">
+    <span class="frame-time" id="frame-time">0:00 / 0:00</span>
+    <button class="capture-btn" id="capture-ref-btn">📷 → Referans Görsel</button>
   </div>
 </div>
 
@@ -434,21 +635,12 @@ header.topbar{
 //  STATE
 // ═══════════════════════════════════════════════════════════════════════════
 const state = {
-  models: null,              // /api/models cevabı
-  task:   'video',           // 'video' | 'image'
-  model:  null,              // ör. 'wan-2-5-video'
-  mode:   null,              // ör. 'text-to-video'
-  form:   {},                // dinamik form değerleri
-  balance: null,
-  acctEmail: null,
-  refImageUrls: [],          // image-to-image için yüklenmiş URL'ler
-  refImagePreviews: [],      // {name, url, dataUrl}
-  i2vImageUrl: null,
-  i2vImagePreview: null,
-  audioUrl: null,
-  audioName: null,
-  generating: false,
-  results: [],               // {type, url, ts}
+  models: null, task: 'video', model: null, mode: null, form: {},
+  balance: null, acctEmail: null,
+  refImageUrls: [], refImagePreviews: [],
+  i2vImageUrl: null, i2vImagePreview: null,
+  audioUrl: null, audioName: null,
+  generating: false, activeJobs: {}, galleryItems: [], savedPrompts: [],
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -493,6 +685,11 @@ function confirmModal(title, body){
     $('#modal-cancel').addEventListener('click', cancel);
   });
 }
+
+function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function copyText(text){ if(navigator.clipboard) navigator.clipboard.writeText(text).then(()=> toast('✅ Kopyalandı!','success',2000)); }
+function formatTime(s){ s=Math.round(s||0); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+function formatDate(ts){ if(!ts) return ''; const d=new Date(ts); return d.toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}); }
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  ACCOUNT
@@ -554,17 +751,12 @@ async function refreshBalance(){
 function selectTask(task){
   state.task = task;
   $$('#task-tabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.task === task));
-
-  // İlk modeli seç
   const modelKeys = Object.keys(state.models).filter(k => state.models[k].type === task);
   state.model = modelKeys[0];
   state.mode = Object.keys(state.models[state.model].modes)[0];
-  state.refImageUrls = [];
-  state.refImagePreviews = [];
-  state.i2vImageUrl = null;
-  state.i2vImagePreview = null;
-  state.audioUrl = null;
-  state.audioName = null;
+  state.refImageUrls = []; state.refImagePreviews = [];
+  state.i2vImageUrl = null; state.i2vImagePreview = null;
+  state.audioUrl = null; state.audioName = null;
   state.form = {};
   buildForm();
 }
@@ -576,19 +768,13 @@ function buildForm(){
   const modes = modelCfg.modes;
   const modeCfg = modes[state.mode];
   const defaults = modeCfg.default_params;
-
-  // Field state init from defaults if not present
-  for(const k in defaults){
-    if(state.form[k] === undefined) state.form[k] = defaults[k];
-  }
+  for(const k in defaults){ if(state.form[k] === undefined) state.form[k] = defaults[k]; }
   state.form.mode = state.mode;
 
-  // ───── Model + Mode selectors
+  // Model selector
   const headerWrap = document.createElement('div');
   headerWrap.className = 'field';
-  headerWrap.innerHTML = `
-    <div class="field-label">Model <span class="hint">${modelCfg.display_name}</span></div>
-  `;
+  headerWrap.innerHTML = `<div class="field-label">Model <span class="hint">${modelCfg.display_name}</span></div>`;
   const modelKeys = Object.keys(state.models).filter(k => state.models[k].type === state.task);
   if(modelKeys.length > 1){
     const sel = document.createElement('select');
@@ -599,12 +785,7 @@ function buildForm(){
       if(k===state.model) opt.selected = true;
       sel.appendChild(opt);
     });
-    sel.onchange = () => {
-      state.model = sel.value;
-      state.mode = Object.keys(state.models[state.model].modes)[0];
-      state.form = {};
-      buildForm();
-    };
+    sel.onchange = () => { state.model = sel.value; state.mode = Object.keys(state.models[state.model].modes)[0]; state.form = {}; buildForm(); };
     headerWrap.appendChild(sel);
   }
   form.appendChild(headerWrap);
@@ -622,8 +803,7 @@ function buildForm(){
       c.className = 'chip-opt' + (mk===state.mode ? ' active':'');
       c.textContent = modes[mk].display_name || mk;
       c.onclick = () => {
-        state.mode = mk;
-        state.form = {};
+        state.mode = mk; state.form = {};
         state.refImageUrls = []; state.refImagePreviews = [];
         state.i2vImageUrl = null; state.i2vImagePreview = null;
         state.audioUrl = null; state.audioName = null;
@@ -635,126 +815,89 @@ function buildForm(){
     form.appendChild(modeWrap);
   }
 
-  // ───── Prompt
+  // Prompt
   form.appendChild(makeField('Prompt', textarea('prompt', state.form.prompt || '', 'Sahneyi tarif et…')));
   form.appendChild(makeField('Negatif Prompt (opsiyonel)', textarea('negative_prompt', state.form.negative_prompt || '', 'İstenmeyen detaylar…', 60)));
 
-  // ───── VIDEO özel alanları
+  // ───── VIDEO
   if(state.task === 'video'){
-    // Resolution
-    form.appendChild(makeField('Çözünürlük',
-      chipGroup('resolution', modeCfg.supported_resolutions, state.form.resolution)));
-
-    // Duration & Aspect ratio
-    const row = document.createElement('div');
-    row.className = 'field-row';
-    row.appendChild(makeField('Süre (sn)',
-      chipGroup('duration', modeCfg.supported_durations, state.form.duration, true)));
-    row.appendChild(makeField('Aspect Ratio',
-      chipGroup('aspect_ratio', modeCfg.supported_ratios, state.form.aspect_ratio)));
+    form.appendChild(makeField('Çözünürlük', chipGroup('resolution', modeCfg.supported_resolutions, state.form.resolution)));
+    const row = document.createElement('div'); row.className = 'field-row';
+    row.appendChild(makeField('Süre (sn)', chipGroup('duration', modeCfg.supported_durations, state.form.duration, true)));
+    row.appendChild(makeField('Aspect Ratio', chipGroup('aspect_ratio', modeCfg.supported_ratios, state.form.aspect_ratio)));
     form.appendChild(row);
-
-    // Image (i2v)
-    if(modeCfg.needs_image){
-      const wrap = makeField('Referans Görsel (zorunlu)', dropzone('image', 1));
-      form.appendChild(wrap);
-    }
-
-    // Audio
-    if(modeCfg.supports_audio){
-      const wrap = makeField('Ses Dosyası (opsiyonel)', dropzone('audio', 1, true));
-      form.appendChild(wrap);
-    }
-
-    // Seed
+    if(modeCfg.needs_image){ form.appendChild(makeField('Referans Görsel (zorunlu)', dropzone('image', 1))); }
+    if(modeCfg.supports_audio){ form.appendChild(makeField('Ses Dosyası (opsiyonel)', dropzone('audio', 1, true))); }
     form.appendChild(makeField('Seed (opsiyonel)', input('seed', state.form.seed || '', 'Sabit sonuç için sayı')));
-
+    // Watermark
+    const wmWrap = document.createElement('div'); wmWrap.className = 'field';
+    const wmSw = document.createElement('label'); wmSw.className = 'switch';
+    wmSw.innerHTML = `<input type="checkbox" ${state.form.watermark?'checked':''}><span class="track"></span><span>Filigran (watermark)</span>`;
+    wmSw.querySelector('input').onchange = e => { state.form.watermark = e.target.checked; };
+    wmWrap.appendChild(wmSw);
+    form.appendChild(wmWrap);
     // Prompt expansion
-    const swWrap = document.createElement('div');
-    swWrap.className = 'field';
-    const sw = document.createElement('label');
-    sw.className = 'switch';
-    sw.innerHTML = `
-      <input type="checkbox" ${state.form.enable_prompt_expansion ? 'checked':''}>
-      <span class="track"></span>
-      <span>Prompt'u otomatik genişlet</span>
-    `;
+    const swWrap = document.createElement('div'); swWrap.className = 'field';
+    const sw = document.createElement('label'); sw.className = 'switch';
+    sw.innerHTML = `<input type="checkbox" ${state.form.enable_prompt_expansion?'checked':''}><span class="track"></span><span>Prompt'u otomatik genişlet</span>`;
     sw.querySelector('input').onchange = e => { state.form.enable_prompt_expansion = e.target.checked; };
     swWrap.appendChild(sw);
     form.appendChild(swWrap);
   }
 
-  // ───── IMAGE özel alanları
+  // ───── IMAGE
   if(state.task === 'image'){
-    // Ref images upload
     const maxRef = modeCfg.max_ref_images || 9;
-    const refWrap = makeField(`Referans Görseller (max ${maxRef}, opsiyonel · img2img için)`,
-      dropzone('refs', maxRef));
-    form.appendChild(refWrap);
-
-    // Resolution (img2img vs t2i)
+    form.appendChild(makeField(`Referans Görseller (max ${maxRef}, opsiyonel · img2img için)`, dropzone('refs', maxRef)));
     const isImg2Img = state.refImageUrls.length > 0;
     const resKey = isImg2Img ? 'supported_resolutions_img2img' : 'supported_resolutions_t2i';
     const resList = modeCfg[resKey] || modeCfg.supported_resolutions || ['2k'];
     if(!resList.includes(state.form.resolution)) state.form.resolution = resList[0];
-
-    form.appendChild(makeField(
-      `Çözünürlük ${isImg2Img ? '(img2img)' : '(text2img)'}`,
-      chipGroup('resolution', resList, state.form.resolution)
-    ));
-
-    // Num images
-    form.appendChild(makeField('Adet',
-      chipGroup('num_images', [1,2,3,4], state.form.num_images || 1, true)));
-
-    // Seed
+    form.appendChild(makeField(`Çözünürlük ${isImg2Img ? '(img2img)' : '(text2img)'}`, chipGroup('resolution', resList, state.form.resolution)));
+    form.appendChild(makeField('Adet', chipGroup('num_images', [1,2,3,4], state.form.num_images || 1, true)));
     form.appendChild(makeField('Seed (opsiyonel)', input('seed', state.form.seed || '', 'Sabit sonuç için sayı')));
+    // Watermark
+    const wmWrap2 = document.createElement('div'); wmWrap2.className = 'field';
+    const wmSw2 = document.createElement('label'); wmSw2.className = 'switch';
+    wmSw2.innerHTML = `<input type="checkbox" ${state.form.watermark?'checked':''}><span class="track"></span><span>Filigran (watermark)</span>`;
+    wmSw2.querySelector('input').onchange = e => { state.form.watermark = e.target.checked; };
+    wmWrap2.appendChild(wmSw2);
+    form.appendChild(wmWrap2);
+    // Thinking mode
+    const tmWrap = document.createElement('div'); tmWrap.className = 'field';
+    const tmSw = document.createElement('label'); tmSw.className = 'switch';
+    const tmChecked = state.form.thinking_mode !== false;
+    tmSw.innerHTML = `<input type="checkbox" ${tmChecked?'checked':''}><span class="track"></span><span>Thinking Mode (detaylı düşünme)</span>`;
+    tmSw.querySelector('input').onchange = e => { state.form.thinking_mode = e.target.checked; };
+    tmWrap.appendChild(tmSw);
+    form.appendChild(tmWrap);
   }
-
   updateCost();
 }
 
-// ───── Field helpers
 function makeField(label, control){
-  const w = document.createElement('div');
-  w.className = 'field';
-  const l = document.createElement('div');
-  l.className = 'field-label';
-  l.textContent = label;
-  w.appendChild(l);
-  w.appendChild(control);
-  return w;
+  const w = document.createElement('div'); w.className = 'field';
+  const l = document.createElement('div'); l.className = 'field-label'; l.textContent = label;
+  w.appendChild(l); w.appendChild(control); return w;
 }
 function input(key, val, ph=''){
-  const i = document.createElement('input');
-  i.className = 'input';
-  i.value = val;
-  i.placeholder = ph;
-  i.oninput = () => { state.form[key] = i.value; };
-  return i;
+  const i = document.createElement('input'); i.className = 'input'; i.value = val; i.placeholder = ph;
+  i.oninput = () => { state.form[key] = i.value; }; return i;
 }
 function textarea(key, val, ph='', minH=90){
-  const i = document.createElement('textarea');
-  i.className = 'textarea';
-  i.value = val;
-  i.placeholder = ph;
-  i.style.minHeight = minH + 'px';
-  i.oninput = () => { state.form[key] = i.value; };
-  return i;
+  const i = document.createElement('textarea'); i.className = 'textarea'; i.value = val; i.placeholder = ph;
+  i.style.minHeight = minH + 'px'; i.oninput = () => { state.form[key] = i.value; }; return i;
 }
 function chipGroup(key, opts, current, numeric=false){
-  const wrap = document.createElement('div');
-  wrap.className = 'chips';
+  const wrap = document.createElement('div'); wrap.className = 'chips';
   opts.forEach(opt => {
-    const b = document.createElement('button');
-    b.type = 'button';
+    const b = document.createElement('button'); b.type = 'button';
     b.className = 'chip-opt' + ((opt == current) ? ' active' : '');
     b.textContent = opt;
     b.onclick = () => {
       state.form[key] = numeric ? Number(opt) : opt;
       wrap.querySelectorAll('.chip-opt').forEach(x => x.classList.remove('active'));
-      b.classList.add('active');
-      updateCost();
+      b.classList.add('active'); updateCost();
     };
     wrap.appendChild(b);
   });
@@ -762,333 +905,549 @@ function chipGroup(key, opts, current, numeric=false){
   return wrap;
 }
 
-// ───── Dropzone
 function dropzone(kind, max, isAudio=false){
-  // kind: 'image' (i2v single), 'refs' (multi img), 'audio'
   const wrap = document.createElement('div');
-  const dz = document.createElement('label');
-  dz.className = 'dropzone';
-  dz.innerHTML = `
-    <div class="dz-icon">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a89dff" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-    </div>
-    <div class="dz-text">
-      <b>Dosya seç</b> ya da buraya sürükle
-      <br><span style="font-size:11px;color:var(--text-mute)">
-        ${isAudio ? 'mp3 · wav · m4a' : 'jpg · png · webp'} · max ${max}
-      </span>
-    </div>
-    <input type="file" ${max>1?'multiple':''} accept="${isAudio?'audio/*':'image/*'}">
-  `;
+  const dz = document.createElement('label'); dz.className = 'dropzone';
+  dz.innerHTML = `<div class="dz-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a89dff" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg></div>
+    <div class="dz-text"><b>Dosya seç</b> ya da buraya sürükle<br><span style="font-size:11px;color:var(--text-mute)">${isAudio?'mp3 · wav · m4a':'jpg · png · webp'} · max ${max}</span></div>
+    <input type="file" ${max>1?'multiple':''} accept="${isAudio?'audio/*':'image/*'}">`;
   const fileInput = dz.querySelector('input[type=file]');
-  const previews = document.createElement('div');
-  previews.className = 'previews';
-
+  const previews = document.createElement('div'); previews.className = 'previews';
   const refresh = () => {
     previews.innerHTML = '';
     let list;
-    if(kind === 'image'){
-      list = state.i2vImagePreview ? [state.i2vImagePreview] : [];
-    } else if(kind === 'refs'){
-      list = state.refImagePreviews;
-    } else {
-      list = state.audioUrl ? [{audio:true, name: state.audioName}] : [];
-    }
-    list.forEach((p, idx) => {
-      const pe = document.createElement('div');
-      pe.className = 'preview' + (p.audio ? ' audio' : '');
-      if(p.audio){
-        pe.textContent = '🎵 ' + (p.name||'audio');
-      } else {
-        pe.innerHTML = `<img src="${p.dataUrl}">`;
-      }
-      const xBtn = document.createElement('button');
-      xBtn.className = 'x'; xBtn.textContent = '×';
-      xBtn.onclick = (e) => {
+    if(kind==='image') list = state.i2vImagePreview ? [state.i2vImagePreview] : [];
+    else if(kind==='refs') list = state.refImagePreviews;
+    else list = state.audioUrl ? [{audio:true, name:state.audioName}] : [];
+    list.forEach((p,idx)=>{
+      const pe = document.createElement('div'); pe.className = 'preview'+(p.audio?' audio':'');
+      if(p.audio) pe.textContent = '🎵 '+(p.name||'audio');
+      else pe.innerHTML = `<img src="${p.dataUrl}">`;
+      const xBtn = document.createElement('button'); xBtn.className='x'; xBtn.textContent='×';
+      xBtn.onclick = e => {
         e.preventDefault(); e.stopPropagation();
-        if(kind === 'image'){ state.i2vImageUrl = null; state.i2vImagePreview = null; }
-        else if(kind === 'refs'){
-          state.refImageUrls.splice(idx,1);
-          state.refImagePreviews.splice(idx,1);
-          buildForm(); // re-render to update resolution options
-          return;
-        }
-        else { state.audioUrl = null; state.audioName = null; }
+        if(kind==='image'){ state.i2vImageUrl=null; state.i2vImagePreview=null; }
+        else if(kind==='refs'){ state.refImageUrls.splice(idx,1); state.refImagePreviews.splice(idx,1); buildForm(); return; }
+        else { state.audioUrl=null; state.audioName=null; }
         refresh();
       };
-      pe.appendChild(xBtn);
-      previews.appendChild(pe);
+      pe.appendChild(xBtn); previews.appendChild(pe);
     });
   };
-
-  const handleFiles = async (files) => {
+  const handleFiles = async files => {
     files = [...files];
-    if(kind==='image' || kind==='audio') files = files.slice(0,1);
-    if(kind==='refs'){
-      const remaining = max - state.refImagePreviews.length;
-      files = files.slice(0, remaining);
-    }
+    if(kind==='image'||kind==='audio') files=files.slice(0,1);
+    if(kind==='refs'){ const rem=max-state.refImagePreviews.length; files=files.slice(0,rem); }
     for(const file of files){
       const dataUrl = !isAudio ? await readAsDataURL(file) : null;
-      const fd = new FormData();
-      fd.append('file', file);
+      const fd = new FormData(); fd.append('file',file);
       const tmpId = Math.random().toString(36).slice(2);
-      // optimistic preview
-      if(kind==='image'){
-        state.i2vImagePreview = {name: file.name, dataUrl, _tmp: tmpId};
-      } else if(kind==='refs'){
-        state.refImagePreviews.push({name: file.name, dataUrl, _tmp: tmpId});
-      } else {
-        state.audioName = file.name;
-      }
+      if(kind==='image') state.i2vImagePreview={name:file.name,dataUrl,_tmp:tmpId};
+      else if(kind==='refs') state.refImagePreviews.push({name:file.name,dataUrl,_tmp:tmpId});
+      else state.audioName=file.name;
       refresh();
       try{
-        const r = await fetch('/api/upload', {method:'POST', body:fd});
-        const j = await r.json();
-        if(!r.ok) throw new Error(j.error || 'upload failed');
-        if(kind==='image'){ state.i2vImageUrl = j.url; }
-        else if(kind==='refs'){ state.refImageUrls.push(j.url); }
-        else { state.audioUrl = j.url; }
-        toast(`📤 ${file.name} yüklendi`, 'success', 2500);
+        const r=await fetch('/api/upload',{method:'POST',body:fd}); const j=await r.json();
+        if(!r.ok) throw new Error(j.error||'upload failed');
+        if(kind==='image') state.i2vImageUrl=j.url;
+        else if(kind==='refs') state.refImageUrls.push(j.url);
+        else state.audioUrl=j.url;
+        toast(`📤 ${file.name} yüklendi`,'success',2500);
       }catch(e){
-        toast('Yükleme hatası: ' + e.message, 'error');
-        if(kind==='image'){ state.i2vImagePreview = null; }
-        else if(kind==='refs'){
-          state.refImagePreviews = state.refImagePreviews.filter(p=>p._tmp!==tmpId);
-        }
-        else { state.audioName = null; }
+        toast('Yükleme hatası: '+e.message,'error');
+        if(kind==='image') state.i2vImagePreview=null;
+        else if(kind==='refs') state.refImagePreviews=state.refImagePreviews.filter(p=>p._tmp!==tmpId);
+        else state.audioName=null;
         refresh();
       }
     }
     if(kind==='refs') buildForm();
   };
-
   fileInput.onchange = e => handleFiles(e.target.files);
   dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
   dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
-  dz.addEventListener('drop', e => {
-    e.preventDefault(); dz.classList.remove('dragover');
-    handleFiles(e.dataTransfer.files);
-  });
-
-  wrap.appendChild(dz);
-  wrap.appendChild(previews);
-  refresh();
-  return wrap;
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+  wrap.appendChild(dz); wrap.appendChild(previews); refresh(); return wrap;
 }
 
-function readAsDataURL(file){
-  return new Promise(res => {
-    const r = new FileReader();
-    r.onload = () => res(r.result);
-    r.readAsDataURL(file);
-  });
-}
+function readAsDataURL(file){ return new Promise(res => { const r=new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(file); }); }
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  COST
 // ═══════════════════════════════════════════════════════════════════════════
 function updateCost(){
-  let cost = 0;
-  const modelCfg = state.models[state.model];
-  const modeCfg = modelCfg.modes[state.mode];
-  if(state.task === 'video'){
-    const tbl = modeCfg.cost_table || {};
-    cost = (tbl[state.form.resolution] || {})[state.form.duration] || 0;
-  } else {
-    cost = (modeCfg.estimated_credits || 0) * (state.form.num_images || 1);
+  let cost=0;
+  const modelCfg=state.models[state.model];
+  const modeCfg=modelCfg.modes[state.mode];
+  if(state.task==='video'){
+    const tbl=modeCfg.cost_table||{};
+    cost=(tbl[state.form.resolution]||{})[state.form.duration]||0;
+  }else{
+    cost=(modeCfg.estimated_credits||0)*(state.form.num_images||1);
   }
-  $('#cost-val').textContent = cost.toFixed(4) + ' kredi';
-
-  if(state.balance != null && cost > state.balance){
-    $('#cost-val').style.color = '#ff8aa3';
-  } else {
-    $('#cost-val').style.color = '#fff';
-  }
+  $('#cost-val').textContent=cost.toFixed(4)+' kredi';
+  $('#cost-val').style.color=(state.balance!=null && cost>state.balance)?'#ff8aa3':'#fff';
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  GENERATE
+//  TABS (Right panel)
 // ═══════════════════════════════════════════════════════════════════════════
-async function generate(){
-  if(state.generating){ return; }
-  if(!state.acctEmail){
-    toast('Önce bir APIXO hesabı oluştur.', 'warning');
-    return;
-  }
-  if(!state.form.prompt || !state.form.prompt.trim()){
-    toast('Prompt boş olamaz.', 'warning');
-    return;
-  }
-  const modeCfg = state.models[state.model].modes[state.mode];
+$$('#results-tabs .results-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    $$('#results-tabs .results-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    $$('.tab-panel').forEach(p => p.classList.remove('active'));
+    $(`#tab-${tab.dataset.rtab}`).classList.add('active');
+  });
+});
 
-  // Video i2v image kontrol
-  if(state.task==='video' && modeCfg.needs_image && !state.i2vImageUrl){
-    toast('Bu mod için referans görsel zorunlu.', 'warning');
-    return;
-  }
-
-  const payload = {
-    task_type: state.task,
-    model: state.model,
-    mode: state.mode,
-    prompt: state.form.prompt,
-    negative_prompt: state.form.negative_prompt || '',
-    seed: state.form.seed || '',
-  };
-  if(state.task === 'video'){
-    payload.resolution = state.form.resolution;
-    payload.duration = Number(state.form.duration);
-    payload.aspect_ratio = state.form.aspect_ratio;
-    payload.enable_prompt_expansion = !!state.form.enable_prompt_expansion;
-    if(state.i2vImageUrl) payload.image_url = state.i2vImageUrl;
-    if(state.audioUrl) payload.audio_url = state.audioUrl;
-  } else {
-    payload.resolution = state.form.resolution;
-    payload.num_images = Number(state.form.num_images) || 1;
-    payload.image_urls = state.refImageUrls;
-  }
-
-  state.generating = true;
-  $('#btn-generate').disabled = true;
-  $('#btn-generate').textContent = '⏳ Başlatılıyor…';
-
-  setStatus('Üretim başlatılıyor…', 'API isteği gönderiliyor');
-
-  try{
-    const j = await api('/api/generate', {method:'POST', body: payload});
-    const taskId = j.task_id;
-    const model = j.model;
-    setStatus('Üretim devam ediyor…', `task: ${taskId}`);
-    await pollTask(taskId, model);
-  }catch(e){
-    toast('Hata: ' + e.message, 'error');
-    clearStatus();
-  }finally{
-    state.generating = false;
-    $('#btn-generate').disabled = false;
-    $('#btn-generate').textContent = '✨ Üretimi Başlat';
-    await refreshBalance();
-  }
+// ═══════════════════════════════════════════════════════════════════════════
+//  JOB CARD SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════
+function updateJobsCount(){
+  const count=Object.keys(state.activeJobs).length;
+  $('#jobs-count').textContent=count;
+  const empty=$('#jobs-empty'); const grid=$('#jobs-grid');
+  if(empty) empty.style.display=(grid.children.length>0)?'none':'';
 }
 
-function setStatus(head, sub){
-  $('#status-area').innerHTML = `
-    <div class="status-card">
-      <div class="spinner"></div>
-      <div class="txt">
-        <div class="head">${head}</div>
-        <div class="sub">${sub||''}</div>
-      </div>
+function createJobCard(jobId, prompt, model, taskType){
+  $('#jobs-empty').style.display='none';
+  state.activeJobs[jobId]={prompt,model,taskType};
+  updateJobsCount();
+  const card=document.createElement('div'); card.className='job-card'; card.id='job-'+jobId;
+  card.innerHTML=`
+    <div class="job-thumb">
+      <div class="job-status-badge badge-running">PROCESSING</div>
+      <div class="job-progress"><div class="job-progress-fill" id="prog-${jobId}" style="width:2%"></div></div>
+      <button class="job-delete-btn" title="Sil">✕</button>
     </div>
-  `;
-}
-function clearStatus(){ $('#status-area').innerHTML = ''; }
-
-async function pollTask(taskId, model){
-  const started = Date.now();
-  const timeout = 600 * 1000; // 10 dk
-  while(Date.now() - started < timeout){
-    await new Promise(r => setTimeout(r, 4000));
-    try{
-      const r = await fetch(`/api/task-status?task_id=${encodeURIComponent(taskId)}&model=${encodeURIComponent(model)}`);
-      const j = await r.json();
-      const elapsed = Math.floor((Date.now() - started)/1000);
-      setStatus(`State: ${j.state || '...'}`, `task ${taskId} · ${elapsed}s`);
-      if(j.state === 'success'){
-        clearStatus();
-        j.outputs.forEach(url => addResult(state.task, url));
-        toast(`✨ ${j.outputs.length} çıktı hazır`, 'success');
-        return;
-      }
-      if(j.state === 'failed'){
-        clearStatus();
-        toast('Üretim başarısız: ' + (j.error || 'bilinmeyen hata'), 'error');
-        return;
-      }
-    }catch(e){
-      // pollingu sürdür
-    }
-  }
-  clearStatus();
-  toast('Zaman aşımı.', 'error');
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  RESULTS
-// ═══════════════════════════════════════════════════════════════════════════
-function addResult(type, url){
-  state.results.unshift({type, url, ts: new Date()});
-  renderResults();
-}
-
-function renderResults(){
-  const area = $('#results-area');
-  if(state.results.length === 0){
-    area.innerHTML = `
-      <div class="empty" style="grid-column:1/-1">
-        <div class="ico">🎬</div>
-        <h3>Henüz çıktı yok</h3>
-        <p>Solda parametreleri ayarla ve <b>Üretimi Başlat</b>'a bas — sonuçlar burada görünecek.</p>
+    <div class="job-body">
+      <div class="prompt-row">
+        <div class="job-prompt" title="${escapeHtml(prompt)}">${escapeHtml(prompt)}</div>
+        <button class="copy-prompt-btn" data-prompt="${escapeHtml(prompt)}">📋</button>
       </div>
-    `;
-    return;
-  }
-  area.innerHTML = '';
-  state.results.forEach(r => {
-    const card = document.createElement('div');
-    card.className = 'result-card';
-    const media = document.createElement('div');
-    media.className = 'result-media';
-    if(r.type === 'video'){
-      media.innerHTML = `<video src="${r.url}" controls playsinline></video>`;
-    } else {
-      media.innerHTML = `<img src="${r.url}" alt="output">`;
+      <div class="job-meta"><span class="meta-tag">${taskType.toUpperCase()}</span><span class="meta-tag">${model}</span></div>
+      <div class="job-log" id="log-${jobId}"></div>
+    </div>`;
+  card.querySelector('.copy-prompt-btn').addEventListener('click', function(){ copyText(this.dataset.prompt); });
+  card.querySelector('.job-delete-btn').addEventListener('click', async ()=>{
+    card.remove(); delete state.activeJobs[jobId]; updateJobsCount();
+    try{ await fetch('/api/delete-job/'+jobId,{method:'DELETE'}); }catch(e){}
+  });
+  $('#jobs-grid').prepend(card);
+}
+
+function pollJob(jobId){
+  const iv=setInterval(async ()=>{
+    try{
+      const res=await fetch('/api/job-status/'+jobId);
+      if(!res.ok){clearInterval(iv);return;}
+      const data=await res.json();
+      const logEl=$('#log-'+jobId);
+      if(logEl && data.logs){
+        logEl.innerHTML=data.logs.map((l,i)=>`<div class="log-line ${i===data.logs.length-1?'latest':''}">${escapeHtml(l)}</div>`).join('');
+        logEl.scrollTop=logEl.scrollHeight;
+      }
+      const prog=$('#prog-'+jobId);
+      if(prog && data.status==='polling'){
+        const lc=(data.logs||[]).length;
+        prog.style.width=Math.min(5+lc*3,90)+'%';
+      }
+      if(data.status==='done' && data.result_urls && data.result_urls.length){
+        clearInterval(iv); finishJob(jobId,data);
+      }else if(data.status==='error'){
+        clearInterval(iv); errorJob(jobId);
+      }
+    }catch(e){}
+  },4000);
+}
+
+function finishJob(jobId, data){
+  const card=$('#job-'+jobId); if(!card) return;
+  const urls=data.result_urls||[]; const firstUrl=urls[0];
+  const taskType=state.activeJobs[jobId]?.taskType||'video';
+  const prompt=state.activeJobs[jobId]?.prompt||'';
+  const model=state.activeJobs[jobId]?.model||'';
+  const isVideo=taskType==='video';
+  const thumb=card.querySelector('.job-thumb');
+  const sendToHtml=buildSendToHtml(firstUrl,taskType);
+  thumb.innerHTML=isVideo
+    ?`<video src="${escapeHtml(firstUrl)}" autoplay loop muted playsinline></video><div class="job-status-badge badge-done">DONE</div>${sendToHtml}<button class="expand-btn" title="Büyüt">⛶</button><button class="job-delete-btn" title="Sil">✕</button>`
+    :`<img src="${escapeHtml(firstUrl)}" alt="" style="opacity:1"><div class="job-status-badge badge-done">DONE</div>${sendToHtml}<button class="expand-btn" title="Büyüt">⛶</button><button class="job-delete-btn" title="Sil">✕</button>`;
+  bindThumbEvents(thumb,firstUrl,taskType,jobId,'job');
+  const body=card.querySelector('.job-body');
+  const log=body.querySelector('.job-log'); if(log) log.remove();
+  urls.forEach(url=>{
+    const a=document.createElement('a'); a.className='btn-download'; a.href=url; a.target='_blank';
+    a.download=isVideo?'video.mp4':'image.jpg';
+    a.innerHTML=`⬇ İndir ${isVideo?'Video':'Görsel'}`; body.appendChild(a);
+  });
+  const prog=$('#prog-'+jobId); if(prog) prog.style.width='100%';
+  saveToGallery({id:jobId,prompt,model,taskType,url:firstUrl,timestamp:Date.now()});
+  toast(`🎉 ${isVideo?'Video':'Görsel'} hazır!`,'success');
+  refreshBalance();
+  delete state.activeJobs[jobId]; updateJobsCount();
+}
+
+function errorJob(jobId){
+  const badge=$(`#job-${jobId} .job-status-badge`);
+  if(badge){badge.className='job-status-badge badge-error';badge.textContent='HATA';}
+  delete state.activeJobs[jobId]; updateJobsCount();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  SEND-TO SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════
+function buildSendToHtml(url, taskType){
+  return `<div class="send-to-wrap"><button class="send-to-btn" data-url="${escapeHtml(url)}" data-type="${taskType}">↗</button></div>`;
+}
+
+let _portalMenu=null, _portalTarget=null;
+function closeSendToPortal(){ if(_portalMenu){_portalMenu.remove();_portalMenu=null;_portalTarget=null;} }
+
+function openSendToPortal(btn, url, taskType){
+  closeSendToPortal();
+  const rect=btn.getBoundingClientRect();
+  let left=rect.left, top=rect.bottom+4;
+  if(top+80>window.innerHeight) top=rect.top-84;
+  if(left+190>window.innerWidth) left=window.innerWidth-198;
+  if(left<8) left=8; if(top<8) top=8;
+  const menu=document.createElement('div'); menu.className='send-to-portal';
+  menu.style.cssText=`position:fixed;left:${left}px;top:${top}px;`;
+  menu.innerHTML=`<button class="send-to-portal-item" data-action="ref">→ Referans Görsel</button>`;
+  menu.querySelectorAll('.send-to-portal-item').forEach(item=>{
+    item.addEventListener('click',e=>{ e.stopPropagation(); closeSendToPortal(); handleSendTo(item.dataset.action,url,taskType); });
+  });
+  document.body.appendChild(menu); _portalMenu=menu; _portalTarget=btn;
+}
+
+document.addEventListener('click',e=>{ if(_portalMenu && !_portalMenu.contains(e.target) && e.target!==_portalTarget) closeSendToPortal(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSendToPortal(); });
+window.addEventListener('scroll',closeSendToPortal,true);
+
+async function handleSendTo(action, url, taskType){
+  toast('⏳ Aktarılıyor...','info',2000);
+  try{
+    let file;
+    if(taskType==='video') file=await captureVideoFirstFrame(url);
+    else file=await fetchAsFile(url,'result.jpg');
+    const dataUrl=await readAsDataURL(file);
+    state.i2vImagePreview={name:file.name,dataUrl};
+    const fd=new FormData(); fd.append('file',file);
+    const r=await fetch('/api/upload',{method:'POST',body:fd}); const j=await r.json();
+    if(r.ok) state.i2vImageUrl=j.url;
+    if(state.task==='video'){
+      const modeKeys=Object.keys(state.models[state.model].modes);
+      const i2vMode=modeKeys.find(k=>k.includes('image'));
+      if(i2vMode && state.mode!==i2vMode){ state.mode=i2vMode; state.form={}; }
     }
-    const meta = document.createElement('div');
-    meta.className = 'result-meta';
-    const t = r.ts;
-    const ts = `${t.getHours().toString().padStart(2,'0')}:${t.getMinutes().toString().padStart(2,'0')}:${t.getSeconds().toString().padStart(2,'0')}`;
-    meta.innerHTML = `
-      <span class="ts">${ts}</span>
-      <span>· ${r.type}</span>
-      <span class="spacer"></span>
-      <a href="${r.url}" target="_blank" rel="noopener">Aç</a>
-      <a href="${r.url}" download>İndir</a>
-    `;
-    card.appendChild(media);
-    card.appendChild(meta);
-    area.appendChild(card);
+    buildForm();
+    toast('✅ Referans görsel olarak ayarlandı','success');
+  }catch(e){ toast('❌ Aktarım başarısız: '+e.message,'error'); }
+}
+
+async function fetchAsFile(url,name){
+  const resp=await fetch('/api/proxy-media?url='+encodeURIComponent(url));
+  const blob=await resp.blob(); return new File([blob],name,{type:blob.type||'image/jpeg'});
+}
+
+async function captureVideoFirstFrame(url){
+  const resp=await fetch('/api/proxy-media?url='+encodeURIComponent(url));
+  const videoBlob=await resp.blob(); const blobUrl=URL.createObjectURL(videoBlob);
+  return new Promise((resolve,reject)=>{
+    const v=document.createElement('video'); v.muted=true; v.preload='auto';
+    v.addEventListener('loadeddata',()=>{v.currentTime=0.1;},{once:true});
+    v.addEventListener('seeked',()=>{
+      const c=document.getElementById('frame-canvas');
+      c.width=v.videoWidth||1280; c.height=v.videoHeight||720;
+      c.getContext('2d').drawImage(v,0,0);
+      c.toBlob(blob=>{URL.revokeObjectURL(blobUrl);if(blob)resolve(new File([blob],'frame.jpg',{type:'image/jpeg'}));else reject(new Error('Blob err'));},'image/jpeg',0.92);
+    },{once:true});
+    v.addEventListener('error',()=>{URL.revokeObjectURL(blobUrl);reject(new Error('Video yüklenemedi'));},{once:true});
+    v.src=blobUrl; v.load();
   });
 }
+
+function bindThumbEvents(thumb,url,taskType,id,prefix){
+  thumb.querySelector('.expand-btn')?.addEventListener('click',()=>openExpandModal(url,taskType));
+  thumb.querySelector('.job-delete-btn')?.addEventListener('click',async ()=>{
+    const card=document.getElementById(prefix+'-'+id);
+    if(card){
+      card.remove();
+      if(prefix==='job'){delete state.activeJobs[id];updateJobsCount();try{await fetch('/api/delete-job/'+id,{method:'DELETE'});}catch(e){}}
+      else{deleteGalleryItem(id);updateGalleryCount();}
+    }
+  });
+  const sendBtn=thumb.querySelector('.send-to-btn');
+  if(sendBtn){
+    sendBtn.addEventListener('click',e=>{
+      e.stopPropagation();
+      if(_portalTarget===sendBtn){closeSendToPortal();return;}
+      openSendToPortal(sendBtn,url,taskType);
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  EXPAND MODAL + FRAME CAPTURE
+// ═══════════════════════════════════════════════════════════════════════════
+let currentExpandUrl='', currentExpandType='';
+let frameTimeInterval=null;
+
+function openExpandModal(url,type){
+  currentExpandUrl=url; currentExpandType=type;
+  const inner=$('#expand-inner'); const bar=$('#frame-bar');
+  if(type==='video'){
+    inner.innerHTML=`<video id="expand-video" controls loop playsinline muted src="${escapeHtml(url)}"></video>`;
+    const vid=inner.querySelector('video'); vid.load(); vid.play().catch(()=>{});
+    bar.style.display='flex';
+    frameTimeInterval=setInterval(()=>{
+      const ft=$('#frame-time');
+      if(ft&&vid) ft.textContent=formatTime(vid.currentTime)+' / '+(isFinite(vid.duration)?formatTime(vid.duration):'?:??');
+    },250);
+  }else{
+    inner.innerHTML=`<img src="${escapeHtml(url)}" alt="" style="width:100%;height:100%;object-fit:contain">`;
+    bar.style.display='none';
+  }
+  $('#expand-modal').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+
+function closeExpandModal(){
+  $('#expand-modal').classList.remove('show');
+  $('#expand-inner').innerHTML=''; document.body.style.overflow='';
+  if(frameTimeInterval){clearInterval(frameTimeInterval);frameTimeInterval=null;}
+}
+
+$('#expand-close').addEventListener('click',closeExpandModal);
+$('#expand-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeExpandModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeExpandModal();});
+
+$('#capture-ref-btn').addEventListener('click',async ()=>{
+  const vid=$('#expand-video'); if(!vid) return;
+  const btn=$('#capture-ref-btn'); btn.disabled=true;
+  const origText=btn.textContent; btn.textContent='⏳ Yakalanıyor...';
+  const seekTime=vid.currentTime;
+  try{
+    let file;
+    const canvas=document.getElementById('frame-canvas');
+    canvas.width=vid.videoWidth||1280; canvas.height=vid.videoHeight||720;
+    canvas.getContext('2d').drawImage(vid,0,0);
+    try{
+      canvas.toDataURL();
+      file=await new Promise((res,rej)=>{canvas.toBlob(blob=>{if(blob)res(new File([blob],`frame_${Math.round(seekTime)}s.jpg`,{type:'image/jpeg'}));else rej(new Error('Blob failed'));},'image/jpeg',0.92);});
+    }catch(corsErr){ file=await captureFrameAtTime(currentExpandUrl,seekTime); }
+    closeExpandModal();
+    const dataUrl=await readAsDataURL(file);
+    state.i2vImagePreview={name:file.name,dataUrl};
+    const fd=new FormData(); fd.append('file',file);
+    const r=await fetch('/api/upload',{method:'POST',body:fd}); const j=await r.json();
+    if(r.ok) state.i2vImageUrl=j.url;
+    if(state.task==='video'){
+      const modeKeys=Object.keys(state.models[state.model].modes);
+      const i2vMode=modeKeys.find(k=>k.includes('image'));
+      if(i2vMode && state.mode!==i2vMode){state.mode=i2vMode;state.form={};}
+    }
+    buildForm();
+    toast(`📷 ${formatTime(seekTime)} → Referans Görsel`,'success');
+  }catch(e){ toast('❌ Frame alınamadı: '+e.message,'error'); }
+  finally{ btn.disabled=false; btn.textContent=origText; }
+});
+
+async function captureFrameAtTime(url,seekTime){
+  const resp=await fetch('/api/proxy-media?url='+encodeURIComponent(url));
+  const videoBlob=await resp.blob(); const blobUrl=URL.createObjectURL(videoBlob);
+  return new Promise((resolve,reject)=>{
+    const v=document.createElement('video'); v.muted=true; v.preload='auto';
+    const onS=()=>{ const c=document.getElementById('frame-canvas'); c.width=v.videoWidth||1280; c.height=v.videoHeight||720; c.getContext('2d').drawImage(v,0,0); c.toBlob(blob=>{URL.revokeObjectURL(blobUrl);if(blob)resolve(new File([blob],`frame_${Math.round(seekTime)}s.jpg`,{type:'image/jpeg'}));else reject(new Error('Blob err'));},'image/jpeg',0.92); };
+    v.addEventListener('loadeddata',()=>{if(seekTime<=0.1){onS();}else{v.addEventListener('seeked',onS,{once:true});v.currentTime=Math.min(seekTime,(v.duration||999)-0.05);}},{once:true});
+    v.addEventListener('error',()=>{URL.revokeObjectURL(blobUrl);reject(new Error('Video proxy hatası'));},{once:true});
+    v.src=blobUrl; v.load();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  GALLERY
+// ═══════════════════════════════════════════════════════════════════════════
+function updateGalleryCount(){
+  const count=$('#gallery-grid').children.length;
+  $('#gallery-count').textContent=count;
+  const empty=$('#gallery-empty'); if(empty) empty.style.display=count>0?'none':'';
+}
+
+async function loadGallery(){
+  try{ const items=await api('/api/gallery'); items.forEach(item=>renderGalleryCard(item,false)); updateGalleryCount(); }catch(e){}
+}
+
+async function saveToGallery(job){
+  try{ await api('/api/gallery',{method:'POST',body:job}); }catch(e){}
+  renderGalleryCard(job,true); updateGalleryCount();
+}
+
+async function deleteGalleryItem(id){ try{await fetch('/api/gallery/'+id,{method:'DELETE'});}catch(e){} }
+
+function renderGalleryCard(job,prepend=true){
+  $('#gallery-empty').style.display='none';
+  const isVideo=job.taskType==='video';
+  const sendToHtml=buildSendToHtml(job.url,job.taskType);
+  const card=document.createElement('div'); card.className='job-card'; card.id='gallery-'+job.id;
+  const mediaHtml=isVideo?`<video src="${escapeHtml(job.url)}" autoplay loop muted playsinline></video>`:`<img src="${escapeHtml(job.url)}" alt="" style="opacity:1">`;
+  card.innerHTML=`
+    <div class="job-thumb">${mediaHtml}<div class="job-status-badge badge-done">DONE</div>${sendToHtml}<button class="expand-btn" title="Büyüt">⛶</button><button class="job-delete-btn" title="Sil">✕</button><div class="gallery-date">${formatDate(job.timestamp)}</div></div>
+    <div class="job-body">
+      <div class="prompt-row"><div class="job-prompt" title="${escapeHtml(job.prompt)}">${escapeHtml(job.prompt)}</div><button class="copy-prompt-btn" data-prompt="${escapeHtml(job.prompt)}">📋</button></div>
+      <div class="job-meta"><span class="meta-tag">${(job.taskType||'').toUpperCase()}</span><span class="meta-tag">${job.model||''}</span></div>
+      <a class="btn-download" href="${escapeHtml(job.url)}" target="_blank" download="result.${isVideo?'mp4':'jpg'}">⬇ İndir</a>
+    </div>`;
+  card.querySelector('.copy-prompt-btn').addEventListener('click',function(){copyText(this.dataset.prompt);});
+  bindThumbEvents(card.querySelector('.job-thumb'),job.url,job.taskType,job.id,'gallery');
+  const grid=$('#gallery-grid');
+  if(prepend) grid.prepend(card); else grid.appendChild(card);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  PROMPT LIBRARY
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadPrompts(){
+  try{ const items=await api('/api/prompts'); state.savedPrompts=items; renderPromptLibrary(); }catch(e){}
+}
+
+function renderPromptLibrary(){
+  const list=$('#plib-list'); const empty=$('#prompts-empty');
+  list.innerHTML='';
+  $('#prompts-count').textContent=state.savedPrompts.length;
+  if(!state.savedPrompts.length){empty.style.display='';return;}
+  empty.style.display='none';
+  state.savedPrompts.forEach(p=>{
+    const card=document.createElement('div'); card.className='plib-card';
+    card.innerHTML=`<div class="plib-text">${escapeHtml(p.text)}</div><div class="plib-actions"><button class="plib-act-btn use">↗ Kullan</button><button class="plib-act-btn del">✕ Sil</button></div>`;
+    card.querySelector('.plib-act-btn.use').addEventListener('click',()=>{
+      state.form.prompt=p.text; buildForm();
+      $$('#results-tabs .results-tab').forEach(t=>t.classList.remove('active'));
+      $$('.tab-panel').forEach(tp=>tp.classList.remove('active'));
+      $$('#results-tabs .results-tab')[0].classList.add('active');
+      $('#tab-jobs').classList.add('active');
+      toast('✅ Prompt alana aktarıldı','success');
+    });
+    card.querySelector('.plib-act-btn.del').addEventListener('click',async ()=>{
+      await fetch('/api/prompts/'+p.id,{method:'DELETE'});
+      state.savedPrompts=state.savedPrompts.filter(x=>x.id!==p.id);
+      renderPromptLibrary();
+    });
+    list.appendChild(card);
+  });
+}
+
+$('#plib-save-btn').addEventListener('click',async ()=>{
+  const inp=$('#plib-input'); const text=inp.value.trim();
+  if(!text){toast('⚠️ Prompt girin.','warning');return;}
+  try{
+    const saved=await api('/api/prompts',{method:'POST',body:{text}});
+    state.savedPrompts.unshift(saved); renderPromptLibrary();
+    inp.value=''; toast('✅ Prompt kaydedildi!','success');
+  }catch(e){toast('Hata: '+e.message,'error');}
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  GENERATE (uses job system)
+// ═══════════════════════════════════════════════════════════════════════════
+async function generate(){
+  if(state.generating) return;
+  if(!state.acctEmail){ toast('Önce bir APIXO hesabı oluştur.','warning'); return; }
+  if(!state.form.prompt || !state.form.prompt.trim()){ toast('Prompt boş olamaz.','warning'); return; }
+  const modeCfg=state.models[state.model].modes[state.mode];
+  if(state.task==='video' && modeCfg.needs_image && !state.i2vImageUrl){ toast('Bu mod için referans görsel zorunlu.','warning'); return; }
+
+  const payload={
+    task_type:state.task, model:state.model, mode:state.mode,
+    prompt:state.form.prompt, negative_prompt:state.form.negative_prompt||'',
+    seed:state.form.seed||'',
+  };
+  if(state.task==='video'){
+    payload.resolution=state.form.resolution;
+    payload.duration=Number(state.form.duration);
+    payload.aspect_ratio=state.form.aspect_ratio;
+    payload.enable_prompt_expansion=!!state.form.enable_prompt_expansion;
+    payload.watermark=!!state.form.watermark;
+    if(state.i2vImageUrl) payload.image_url=state.i2vImageUrl;
+    if(state.audioUrl) payload.audio_url=state.audioUrl;
+  }else{
+    payload.resolution=state.form.resolution;
+    payload.num_images=Number(state.form.num_images)||1;
+    payload.image_urls=state.refImageUrls;
+    payload.watermark=!!state.form.watermark;
+    payload.thinking_mode=state.form.thinking_mode!==false;
+  }
+
+  state.generating=true;
+  $('#btn-generate').disabled=true;
+  $('#btn-generate').textContent='⏳ Başlatılıyor…';
+
+  try{
+    const j=await api('/api/start-job',{method:'POST',body:payload});
+    createJobCard(j.job_id,state.form.prompt,state.model,state.task);
+    pollJob(j.job_id);
+    $$('#results-tabs .results-tab').forEach(t=>t.classList.remove('active'));
+    $$('.tab-panel').forEach(p=>p.classList.remove('active'));
+    $$('#results-tabs .results-tab')[0].classList.add('active');
+    $('#tab-jobs').classList.add('active');
+    toast('✅ Üretim sıraya alındı!','success');
+  }catch(e){ toast('Hata: '+e.message,'error'); }
+  finally{
+    state.generating=false;
+    $('#btn-generate').disabled=false;
+    $('#btn-generate').textContent='✨ Üretimi Başlat';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  CLEAR BUTTONS
+// ═══════════════════════════════════════════════════════════════════════════
+$('#btn-clear-jobs').addEventListener('click',async ()=>{
+  if(!$('#jobs-grid').children.length) return;
+  const ok=await confirmModal('Üretimleri temizle?','Tüm üretim kartları silinecek.');
+  if(ok){$('#jobs-grid').innerHTML='';state.activeJobs={};updateJobsCount();}
+});
+$('#btn-clear-gallery').addEventListener('click',async ()=>{
+  if(!$('#gallery-grid').children.length) return;
+  const ok=await confirmModal('Galeriyi temizle?','Tüm galeri öğeleri silinecek.');
+  if(ok){await fetch('/api/gallery/clear',{method:'DELETE'});$('#gallery-grid').innerHTML='';updateGalleryCount();}
+});
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  EVENTS
 // ═══════════════════════════════════════════════════════════════════════════
 $$('#task-tabs .tab').forEach(t => t.addEventListener('click', () => selectTask(t.dataset.task)));
 $('#btn-new-account').addEventListener('click', async () => {
-  if(state.acctEmail){
-    const ok = await confirmModal('Yeni hesap oluştur?', 'Mevcut APIXO oturumu kapatılıp yenisi açılacak.');
-    if(!ok) return;
-  }
+  if(state.acctEmail){ const ok=await confirmModal('Yeni hesap oluştur?','Mevcut APIXO oturumu kapatılıp yenisi açılacak.'); if(!ok) return; }
   newAccount();
 });
 $('#btn-refresh').addEventListener('click', refreshBalance);
 $('#btn-generate').addEventListener('click', generate);
-$('#btn-clear').addEventListener('click', async () => {
-  if(state.results.length === 0) return;
-  const ok = await confirmModal('Çıktıları temizle?', 'Tüm üretilmiş çıktılar listeden silinecek (dosyalar bulutta kalır).');
-  if(ok){ state.results = []; renderResults(); }
-});
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  INIT
+//  RESTORE + INIT
 // ═══════════════════════════════════════════════════════════════════════════
+async function restoreJobs(){
+  try{
+    const jobs=await api('/api/jobs');
+    Object.entries(jobs).forEach(([jobId,job])=>{
+      if(job.status!=='done' && job.status!=='error'){
+        createJobCard(jobId,job.prompt||'',job.model||'',job.task_type||'video');
+        pollJob(jobId);
+      }
+    });
+  }catch(e){}
+}
+
 (async () => {
   state.models = await api('/api/models');
   selectTask('video');
-  renderResults();
   await whoami();
+  loadGallery();
+  loadPrompts();
+  restoreJobs();
   if(!state.acctEmail){
     setTimeout(()=>toast('İlk üretim için sağ üstten <b>Yeni Hesap</b> oluştur.', 'warning', 6000), 600);
   }
