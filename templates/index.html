@@ -164,6 +164,7 @@ header.topbar{
 
 /* ═══════════ DROPZONE ═══════════ */
 .dropzone{
+  display:block;
   position:relative;border:2px dashed var(--border-strong);border-radius:var(--r-lg);
   padding:18px;text-align:center;cursor:pointer;background:rgba(8,9,16,.4);
   transition:.2s;
@@ -871,6 +872,14 @@ function buildForm(){
     tmSw.querySelector('input').onchange = e => { state.form.thinking_mode = e.target.checked; };
     tmWrap.appendChild(tmSw);
     form.appendChild(tmWrap);
+    // Sequential Generation
+    const seqWrap = document.createElement('div'); seqWrap.className = 'field';
+    const seqSw = document.createElement('label'); seqSw.className = 'switch';
+    const seqChecked = state.form.enable_sequential === true;
+    seqSw.innerHTML = `<input type="checkbox" ${seqChecked?'checked':''}><span class="track"></span><span>Sıralı Oluşturma (enable_sequential)</span>`;
+    seqSw.querySelector('input').onchange = e => { state.form.enable_sequential = e.target.checked; };
+    seqWrap.appendChild(seqSw);
+    form.appendChild(seqWrap);
   }
   updateCost();
 }
@@ -919,6 +928,13 @@ function dropzone(kind, max, isAudio=false){
     if(kind==='image') list = state.i2vImagePreview ? [state.i2vImagePreview] : [];
     else if(kind==='refs') list = state.refImagePreviews;
     else list = state.audioUrl ? [{audio:true, name:state.audioName}] : [];
+
+    if (list.length > 0) {
+      dz.style.display = 'none';
+    } else {
+      dz.style.display = '';
+    }
+
     list.forEach((p,idx)=>{
       const pe = document.createElement('div'); pe.className = 'preview'+(p.audio?' audio':'');
       if(p.audio) pe.textContent = '🎵 '+(p.name||'audio');
@@ -933,6 +949,26 @@ function dropzone(kind, max, isAudio=false){
       };
       pe.appendChild(xBtn); previews.appendChild(pe);
     });
+
+    if (kind === 'refs' && list.length > 0 && list.length < max) {
+      const addBtn = document.createElement('div');
+      addBtn.className = 'preview';
+      addBtn.style.cursor = 'pointer';
+      addBtn.style.border = '2px dashed var(--accent)';
+      addBtn.style.display = 'flex';
+      addBtn.style.alignItems = 'center';
+      addBtn.style.justifyContent = 'center';
+      addBtn.style.color = 'var(--accent)';
+      addBtn.style.fontSize = '24px';
+      addBtn.style.fontWeight = 'bold';
+      addBtn.textContent = '+';
+      addBtn.title = 'Yeni referans görsel ekle';
+      addBtn.onclick = e => {
+        e.preventDefault();
+        fileInput.click();
+      };
+      previews.appendChild(addBtn);
+    }
   };
   const handleFiles = async files => {
     files = [...files];
@@ -1014,7 +1050,6 @@ function updateJobsCount(){
 function createJobCard(jobId, prompt, model, taskType){
   $('#jobs-empty').style.display='none';
   state.activeJobs[jobId]={prompt,model,taskType};
-  updateJobsCount();
   const card=document.createElement('div'); card.className='job-card'; card.id='job-'+jobId;
   card.innerHTML=`
     <div class="job-thumb">
@@ -1036,6 +1071,7 @@ function createJobCard(jobId, prompt, model, taskType){
     try{ await fetch('/api/delete-job/'+jobId,{method:'DELETE'}); }catch(e){}
   });
   $('#jobs-grid').prepend(card);
+  updateJobsCount();
 }
 
 function pollJob(jobId){
@@ -1378,6 +1414,7 @@ async function generate(){
     payload.image_urls=state.refImageUrls;
     payload.watermark=!!state.form.watermark;
     payload.thinking_mode=state.form.thinking_mode!==false;
+    payload.enable_sequential=!!state.form.enable_sequential;
   }
 
   state.generating=true;
