@@ -399,7 +399,8 @@ def get_balance(sess: requests.Session) -> float:
 
 def generate_video(sess, prompt, mode, resolution, duration, aspect_ratio,
                    enable_prompt_expansion, image_url=None, negative_prompt="",
-                   seed="", audio_url=None, model="wan-2-5-video"):
+                   seed="", audio_url=None, model="wan-2-5-video",
+                   watermark=False):
     mode_cfg = MODEL_CONFIGS[model]["modes"][mode]
     params = dict(mode_cfg["default_params"])
     params.update({
@@ -407,6 +408,7 @@ def generate_video(sess, prompt, mode, resolution, duration, aspect_ratio,
         "duration": duration, "aspect_ratio": aspect_ratio,
         "enable_prompt_expansion": enable_prompt_expansion,
         "negative_prompt": negative_prompt, "seed": seed,
+        "watermark": watermark,
         "image_urls": [image_url] if image_url else [],
         "audio_urls": [audio_url] if audio_url else [],
     })
@@ -423,7 +425,9 @@ def generate_video(sess, prompt, mode, resolution, duration, aspect_ratio,
 
 def generate_image(sess, prompt, mode, resolution, num_images=1,
                    image_urls=None, model="wan-2-7-image",
-                   negative_prompt="", seed=""):
+                   negative_prompt="", seed="",
+                   watermark=False, thinking_mode=True,
+                   enable_sequential=False):
     mode_cfg = MODEL_CONFIGS[model]["modes"][mode]
     params = dict(mode_cfg["default_params"])
     params.update({
@@ -431,6 +435,8 @@ def generate_image(sess, prompt, mode, resolution, num_images=1,
         "num_images": num_images,
         "image_urls": image_urls if image_urls else [],
         "negative_prompt": negative_prompt, "seed": seed,
+        "watermark": watermark, "thinking_mode": thinking_mode,
+        "enable_sequential": enable_sequential,
     })
     cost = mode_cfg["estimated_credits"] * num_images
     r = sess.post(
@@ -499,6 +505,7 @@ def _run_job(job_id, data, apixo_sess):
                 seed=data.get('seed', ''),
                 audio_url=data.get('audio_url') or None,
                 model=model,
+                watermark=bool(data.get('watermark', False)),
             )
         elif task_type == 'image':
             model = data.get('model', 'wan-2-7-image')
@@ -512,6 +519,9 @@ def _run_job(job_id, data, apixo_sess):
                 model=model,
                 negative_prompt=data.get('negative_prompt', ''),
                 seed=data.get('seed', ''),
+                watermark=bool(data.get('watermark', False)),
+                thinking_mode=data.get('thinking_mode', True),
+                enable_sequential=bool(data.get('enable_sequential', False)),
             )
         else:
             update({'status': 'error'})
@@ -785,6 +795,7 @@ def api_generate():
                 seed=data.get('seed', ''),
                 audio_url=data.get('audio_url') or None,
                 model=model,
+                watermark=bool(data.get('watermark', False)),
             )
             return jsonify({"task_id": task_id, "model": model})
 
@@ -800,6 +811,9 @@ def api_generate():
                 model=model,
                 negative_prompt=data.get('negative_prompt', ''),
                 seed=data.get('seed', ''),
+                watermark=bool(data.get('watermark', False)),
+                thinking_mode=data.get('thinking_mode', True),
+                enable_sequential=bool(data.get('enable_sequential', False)),
             )
             return jsonify({"task_id": task_id, "model": model})
 
