@@ -922,8 +922,9 @@ def api_save_prompt():
     text = (data.get('text') or '').strip()
     if not text:
         return jsonify({"error": "Prompt boş olamaz"}), 400
-    pid = str(_uuid.uuid4())
-    entry = {"id": pid, "text": text, "timestamp": int(time.time() * 1000)}
+    pid = data.get('id') or str(_uuid.uuid4())
+    title = (data.get('title') or '').strip()
+    entry = {"id": pid, "title": title, "text": text, "timestamp": int(time.time() * 1000)}
     with prompts_lock:
         prompts_store[pid] = entry
     return jsonify(entry)
@@ -1006,7 +1007,21 @@ def api_proxy_media():
         if 'Content-Range' in resp.headers:
             response_headers['Content-Range'] = resp.headers['Content-Range']
         if dl:
-            response_headers['Content-Disposition'] = 'attachment; filename="download"'
+            ext = ""
+            if url:
+                path_part = url.split('?')[0].split('/')[-1]
+                if '.' in path_part:
+                    ext = "." + path_part.split('.')[-1]
+            if not ext:
+                content_type = resp.headers.get('content-type', '')
+                if 'video' in content_type:
+                    ext = '.mp4'
+                elif 'image' in content_type:
+                    ext = '.jpg'
+                elif 'audio' in content_type:
+                    ext = '.mp3'
+            filename = f"apixo_media{ext}"
+            response_headers['Content-Disposition'] = f'attachment; filename="{filename}"'
 
         def gen():
             for chunk in resp.iter_content(chunk_size=65536):
