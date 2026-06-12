@@ -42,19 +42,25 @@ body::after{
 /* ═══════════ HEADER ═══════════ */
 header.topbar{
   position:sticky;top:0;z-index:50;
-  display:flex;align-items:center;gap:20px;padding:14px 28px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 28px;
   background:rgba(8,9,16,.65);backdrop-filter:blur(20px);
   border-bottom:1px solid var(--border);
 }
+.topbar-left { display: flex; align-items: center; }
+.topbar-center { display: flex; align-items: center; gap: 12px; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
 .brand{
   font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;letter-spacing:.4px;
-  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
   display:flex;align-items:center;gap:10px;
+}
+.brand-text{
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
 }
 .brand-dot{
   width:10px;height:10px;border-radius:50%;background:var(--grad);
   box-shadow:0 0 16px rgba(124,92,255,.7);
   animation:pulseDot 2.4s infinite;
+  flex-shrink:0;
 }
 @keyframes pulseDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.7}}
 .topbar .spacer{flex:1}
@@ -63,6 +69,11 @@ header.topbar{
   padding:8px 14px;background:rgba(20,22,35,.6);border:1px solid var(--border);
   border-radius:999px;font-size:13px;color:var(--text-dim);
   transition:.2s;
+  max-width:260px;
+}
+.chip span, .chip b{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  max-width:180px;
 }
 .chip.success{border-color:rgba(46,204,113,.3);color:#86eab1}
 .chip.warning{border-color:rgba(255,170,51,.3);color:#ffcc77}
@@ -138,9 +149,15 @@ header.topbar{
 
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip-opt{
-  padding:9px 14px;border-radius:10px;font-size:13px;cursor:pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0 14px;
+  border-radius:10px;font-size:13px;cursor:pointer;
   background:rgba(8,9,16,.5);border:1px solid var(--border);color:var(--text-dim);
   transition:.18s;font-family:inherit;user-select:none;
+  vertical-align: middle;
 }
 .chip-opt:hover{color:var(--text);border-color:var(--border-strong)}
 .chip-opt.active{
@@ -164,7 +181,7 @@ header.topbar{
 
 /* ═══════════ DROPZONE ═══════════ */
 .dropzone{
-  display:block;
+  display:block;width:100%;box-sizing:border-box;
   position:relative;border:2px dashed var(--border-strong);border-radius:var(--r-lg);
   padding:18px;text-align:center;cursor:pointer;background:rgba(8,9,16,.4);
   transition:.2s;
@@ -239,7 +256,7 @@ header.topbar{
 .job-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .meta-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-mute);background:rgba(8,9,16,.5);padding:3px 8px;border-radius:6px;border:1px solid var(--border)}
 .job-log{background:rgba(8,9,16,.5);border-radius:8px;padding:8px 10px;max-height:80px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
-.log-line{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-mute);line-height:1.8}
+.log-line{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-mute);line-height:1.8;white-space:pre-wrap;word-break:break-all}
 .log-line.latest{color:var(--accent)}
 .btn-download{
   display:flex;align-items:center;justify-content:center;gap:8px;
@@ -324,11 +341,91 @@ header.topbar{
 .plib-save-btn:hover{box-shadow:0 4px 16px rgba(124,92,255,.3)}
 .plib-list{display:flex;flex-direction:column;gap:10px}
 .plib-card{
-  background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);
-  padding:12px 14px;display:flex;align-items:flex-start;gap:10px;transition:.15s;
+  background:var(--card-2);border:1px solid var(--border);border-radius:var(--r-md);
+  padding:12px 14px;display:flex;flex-direction:column;gap:10px;transition:.15s;
 }
 .plib-card:hover{border-color:var(--border-strong)}
-.plib-text{flex:1;font-size:13px;color:var(--text);line-height:1.5;word-break:break-word}
+.plib-card-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+.plib-card-title-input {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  padding: 0;
+  pointer-events: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.plib-card-text-display {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+.plib-card-text-input {
+  display: none;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-dim);
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  padding: 0;
+  resize: none;
+  line-height: 1.5;
+}
+.plib-card.editing .plib-card-title-input {
+  background: rgba(8, 9, 16, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  pointer-events: auto;
+  text-overflow: clip;
+  white-space: normal;
+  overflow: visible;
+}
+.plib-card.editing .plib-card-text-display {
+  display: none;
+}
+.plib-card.editing .plib-card-text-input {
+  display: block;
+  background: rgba(8, 9, 16, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  pointer-events: auto;
+  min-height: 60px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.plib-card.editing .plib-card-title-input:focus,
+.plib-card.editing .plib-card-text-input:focus {
+  border-color: var(--accent);
+}
+.plib-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding-top: 8px;
+}
 .plib-actions{display:flex;gap:6px;flex-shrink:0}
 .plib-act-btn{
   font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 10px;
@@ -355,7 +452,7 @@ header.topbar{
 }
 .expand-close:hover{background:var(--danger);border-color:var(--danger)}
 .expand-inner{
-  width:88vw;max-width:1080px;aspect-ratio:16/9;background:#000;
+  width:88vw;max-width:1080px;height:70vh;background:#000;
   border-radius:var(--r-lg);overflow:hidden;
   box-shadow:0 0 80px rgba(0,0,0,.8);animation:rise .25s cubic-bezier(.34,1.56,.64,1);
 }
@@ -368,6 +465,7 @@ header.topbar{
 }
 .frame-time{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-mute);min-width:90px}
 .capture-btn{
+  margin-left:auto;
   background:linear-gradient(135deg,rgba(124,92,255,.12),rgba(0,212,255,.08));
   border:1px solid rgba(124,92,255,.35);color:var(--accent);
   font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.4px;
@@ -422,6 +520,8 @@ header.topbar{
   box-shadow:0 16px 40px rgba(0,0,0,.4);font-size:13px;
   animation:slideIn .3s cubic-bezier(.2,.8,.2,1);
   display:flex;align-items:flex-start;gap:10px;
+  word-break:break-word;overflow-wrap:break-word;
+  max-width:360px;
 }
 .toast.success{border-color:rgba(46,204,113,.4)}
 .toast.error{border-color:rgba(255,85,119,.4)}
@@ -452,16 +552,92 @@ header.topbar{
   .chip{padding:6px 12px;font-size:12px}
   .btn{padding:8px 12px;font-size:12px}
   .jobs-grid{grid-template-columns:1fr}
-  .expand-inner{width:96vw}
-  .frame-bar{width:96vw;flex-wrap:wrap;gap:8px}
+  .expand-inner {
+    width: calc(100vw - 24px) !important;
+    max-width: 1080px !important;
+    height: 60vh !important;
+    margin: 0 12px !important;
+  }
+  .frame-bar {
+    width: calc(100vw - 24px) !important;
+    max-width: 1080px !important;
+    margin: 0 12px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 10px 14px !important;
+    flex-wrap: nowrap !important;
+  }
+  .capture-btn {
+    margin-left: auto !important;
+  }
   .plib-header{flex-direction:column}
+}
+@media (max-width: 768px) {
+  header.topbar {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    grid-template-areas: 
+      "left right"
+      "center center" !important;
+    gap: 12px !important;
+    padding: 12px 14px !important;
+  }
+  .topbar-left { grid-area: left; display: flex; align-items: center; }
+  .topbar-right { grid-area: right; display: flex; align-items: center; gap: 8px; }
+  #btn-new-account span { display: none; }
+  .topbar-center { 
+    grid-area: center; 
+    display: flex; 
+    gap: 8px; 
+    width: 100%;
+  }
+  .topbar-center .chip {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+    font-size: 11px;
+    padding: 8px 10px;
+    overflow: hidden;
+  }
+  .topbar-center .chip span, .topbar-center .chip b {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .brand-text { display: inline !important; }
 }
 @media (max-width: 560px){
   .topbar .spacer{display:none}
   .field-row, .field-row-3{grid-template-columns:1fr}
-  .brand-text{display:none}
-  .expand-inner{width:100vw;border-radius:0}
-  .frame-bar{width:100vw;border-radius:0;padding:8px}
+  .brand-text{display:inline !important}
+  .expand-inner {
+    width: calc(100vw - 16px) !important;
+    height: 50vh !important;
+    border-radius: var(--r-md) !important;
+    margin: 0 8px !important;
+  }
+  .frame-bar {
+    width: calc(100vw - 16px) !important;
+    border-radius: var(--r-md) !important;
+    margin: 0 8px !important;
+    padding: 8px 12px !important;
+  }
+}
+@media (max-width: 480px) {
+  header.topbar { gap: 8px !important; padding: 8px 10px !important; }
+  #toasts {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    max-width: none;
+  }
+  .toast {
+    padding: 10px 14px;
+    font-size: 12px;
+  }
 }
 </style>
 </head>
@@ -471,35 +647,39 @@ header.topbar{
 
   <!-- ═══════ TOP BAR ═══════ -->
   <header class="topbar">
-    <div class="brand">
-      <span class="brand-dot"></span>
-      <span class="brand-text">APIXO STUDIO</span>
+    <div class="topbar-left">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <span class="brand-text">APIXO STUDIO</span>
+      </div>
     </div>
 
-    <div class="chip" id="acct-chip">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
-      <span id="acct-text">Hesap bağlanmadı</span>
+    <div class="topbar-center">
+      <div class="chip" id="acct-chip">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+        <span id="acct-text">Hesap bağlanmadı</span>
+      </div>
+
+      <div class="chip" id="balance-chip">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>
+        <b id="balance-text">— kredi</b>
+      </div>
     </div>
 
-    <div class="chip" id="balance-chip">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>
-      <b id="balance-text">— kredi</b>
+    <div class="topbar-right">
+      <button class="btn" id="btn-new-account" title="Yeni APIXO hesabı oluştur">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v16M4 12h16"/></svg>
+        <span>Yeni Hesap</span>
+      </button>
+
+      <button class="btn" id="btn-refresh" title="Bakiyeyi yenile">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
+      </button>
+
+      <a class="btn danger ghost" href="/logout" title="Çıkış">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l-5-5 5-5M5 12h12"/></svg>
+      </a>
     </div>
-
-    <div class="spacer"></div>
-
-    <button class="btn" id="btn-new-account" title="Yeni APIXO hesabı oluştur">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v16M4 12h16"/></svg>
-      <span>Yeni Hesap</span>
-    </button>
-
-    <button class="btn" id="btn-refresh" title="Bakiyeyi yenile">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
-    </button>
-
-    <a class="btn danger ghost" href="/logout" title="Çıkış">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l-5-5 5-5M5 12h12"/></svg>
-    </a>
   </header>
 
   <!-- ═══════ WORKSPACE ═══════ -->
@@ -591,9 +771,12 @@ header.topbar{
 
       <!-- Prompts Tab -->
       <div class="tab-panel" id="tab-prompts">
-        <div class="plib-header">
-          <input type="text" class="plib-input" id="plib-input" placeholder="Prompt girin veya mevcut promptı kaydedin...">
-          <button class="plib-save-btn" id="plib-save-btn">Kaydet</button>
+        <div class="plib-header" style="flex-direction: column; gap: 8px; align-items: stretch; display: flex; margin-bottom: 14px;">
+          <input type="text" class="plib-input" id="plib-title-input" placeholder="Başlık (opsiyonel)..." style="font-weight: 600;">
+          <div style="display: flex; gap: 10px;">
+            <input type="text" class="plib-input" id="plib-input" placeholder="Prompt girin veya mevcut promptı kaydedin...">
+            <button class="plib-save-btn" id="plib-save-btn">Kaydet</button>
+          </div>
         </div>
         <div class="empty" id="prompts-empty">
           <div class="ico">📝</div>
@@ -636,7 +819,10 @@ header.topbar{
 //  STATE
 // ═══════════════════════════════════════════════════════════════════════════
 const state = {
-  models: null, task: 'video', model: null, mode: null, form: {},
+  models: null, task: 'video', model: null, mode: null,
+  videoForm: {}, imageForm: {},
+  get form() { return this.task === 'video' ? this.videoForm : this.imageForm; },
+  set form(val) { if(this.task === 'video') this.videoForm = val; else this.imageForm = val; },
   balance: null, acctEmail: null,
   refImageUrls: [], refImagePreviews: [],
   i2vImageUrl: null, i2vImagePreview: null,
@@ -750,15 +936,27 @@ async function refreshBalance(){
 //  FORM BUILDER
 // ═══════════════════════════════════════════════════════════════════════════
 function selectTask(task){
+  if (state.models) {
+    if (state.task === 'video') {
+      state.videoModel = state.model;
+      state.videoMode = state.mode;
+    } else if (state.task === 'image') {
+      state.imageModel = state.model;
+      state.imageMode = state.mode;
+    }
+  }
   state.task = task;
   $$('#task-tabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.task === task));
-  const modelKeys = Object.keys(state.models).filter(k => state.models[k].type === task);
-  state.model = modelKeys[0];
-  state.mode = Object.keys(state.models[state.model].modes)[0];
-  state.refImageUrls = []; state.refImagePreviews = [];
-  state.i2vImageUrl = null; state.i2vImagePreview = null;
-  state.audioUrl = null; state.audioName = null;
-  state.form = {};
+  if (state.models) {
+    const modelKeys = Object.keys(state.models).filter(k => state.models[k].type === task);
+    if (task === 'video') {
+      state.model = state.videoModel || modelKeys[0];
+      state.mode = state.videoMode || Object.keys(state.models[state.model].modes)[0];
+    } else {
+      state.model = state.imageModel || modelKeys[0];
+      state.mode = state.imageMode || Object.keys(state.models[state.model].modes)[0];
+    }
+  }
   buildForm();
 }
 
@@ -771,6 +969,26 @@ function buildForm(){
   const defaults = modeCfg.default_params;
   for(const k in defaults){ if(state.form[k] === undefined) state.form[k] = defaults[k]; }
   state.form.mode = state.mode;
+
+  // Validate and correct values
+  if(state.task === 'video'){
+    if(modeCfg.supported_resolutions && !modeCfg.supported_resolutions.includes(state.form.resolution)){
+      state.form.resolution = modeCfg.supported_resolutions[0];
+    }
+    if(modeCfg.supported_durations && !modeCfg.supported_durations.includes(Number(state.form.duration))){
+      state.form.duration = modeCfg.supported_durations[0];
+    }
+    if(modeCfg.supported_ratios && !modeCfg.supported_ratios.includes(state.form.aspect_ratio)){
+      state.form.aspect_ratio = modeCfg.supported_ratios[0];
+    }
+  } else {
+    const isImg2Img = state.refImageUrls.length > 0;
+    const resKey = isImg2Img ? 'supported_resolutions_img2img' : 'supported_resolutions_t2i';
+    const resList = modeCfg[resKey] || modeCfg.supported_resolutions || ['2k'];
+    if(!resList.includes(state.form.resolution)){
+      state.form.resolution = resList[0];
+    }
+  }
 
   // Model selector
   const headerWrap = document.createElement('div');
@@ -786,7 +1004,7 @@ function buildForm(){
       if(k===state.model) opt.selected = true;
       sel.appendChild(opt);
     });
-    sel.onchange = () => { state.model = sel.value; state.mode = Object.keys(state.models[state.model].modes)[0]; state.form = {}; buildForm(); };
+    sel.onchange = () => { state.model = sel.value; state.mode = Object.keys(state.models[state.model].modes)[0]; buildForm(); };
     headerWrap.appendChild(sel);
   }
   form.appendChild(headerWrap);
@@ -804,10 +1022,7 @@ function buildForm(){
       c.className = 'chip-opt' + (mk===state.mode ? ' active':'');
       c.textContent = modes[mk].display_name || mk;
       c.onclick = () => {
-        state.mode = mk; state.form = {};
-        state.refImageUrls = []; state.refImagePreviews = [];
-        state.i2vImageUrl = null; state.i2vImagePreview = null;
-        state.audioUrl = null; state.audioName = null;
+        state.mode = mk;
         buildForm();
       };
       chips.appendChild(c);
@@ -916,18 +1131,23 @@ function chipGroup(key, opts, current, numeric=false){
 
 function dropzone(kind, max, isAudio=false){
   const wrap = document.createElement('div');
-  const dz = document.createElement('label'); dz.className = 'dropzone';
+  const dz = document.createElement('div'); dz.className = 'dropzone';
   dz.innerHTML = `<div class="dz-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a89dff" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg></div>
     <div class="dz-text"><b>Dosya seç</b> ya da buraya sürükle<br><span style="font-size:11px;color:var(--text-mute)">${isAudio?'mp3 · wav · m4a':'jpg · png · webp'} · max ${max}</span></div>
     <input type="file" ${max>1?'multiple':''} accept="${isAudio?'audio/*':'image/*'}">`;
   const fileInput = dz.querySelector('input[type=file]');
+  dz.onclick = (e) => {
+    if (e.target.tagName !== 'INPUT') {
+      fileInput.click();
+    }
+  };
   const previews = document.createElement('div'); previews.className = 'previews';
   const refresh = () => {
     previews.innerHTML = '';
     let list;
     if(kind==='image') list = state.i2vImagePreview ? [state.i2vImagePreview] : [];
     else if(kind==='refs') list = state.refImagePreviews;
-    else list = state.audioUrl ? [{audio:true, name:state.audioName}] : [];
+    else list = state.audioName ? [{audio:true, name:state.audioName}] : [];
 
     if (list.length > 0) {
       dz.style.display = 'none';
@@ -1044,7 +1264,10 @@ function updateJobsCount(){
   const count=Object.keys(state.activeJobs).length;
   $('#jobs-count').textContent=count;
   const empty=$('#jobs-empty'); const grid=$('#jobs-grid');
-  if(empty) empty.style.display=(grid.children.length>0)?'none':'';
+  if (empty && grid) {
+    const hasItems = grid.children.length > 0 || count > 0;
+    empty.style.display = hasItems ? 'none' : 'flex';
+  }
 }
 
 function createJobCard(jobId, prompt, model, taskType){
@@ -1107,16 +1330,17 @@ function finishJob(jobId, data){
   const model=state.activeJobs[jobId]?.model||'';
   const isVideo=taskType==='video';
   const thumb=card.querySelector('.job-thumb');
-  const sendToHtml=buildSendToHtml(firstUrl,taskType);
+  const sendToHtml=isVideo ? '' : buildSendToHtml(firstUrl,taskType);
   thumb.innerHTML=isVideo
-    ?`<video src="${escapeHtml(firstUrl)}" autoplay loop muted playsinline></video><div class="job-status-badge badge-done">DONE</div>${sendToHtml}<button class="expand-btn" title="Büyüt">⛶</button><button class="job-delete-btn" title="Sil">✕</button>`
+    ?`<video src="${escapeHtml(firstUrl)}" autoplay loop muted playsinline></video><div class="job-status-badge badge-done">DONE</div><button class="expand-btn" title="Büyüt">⛶</button><button class="job-delete-btn" title="Sil">✕</button>`
     :`<img src="${escapeHtml(firstUrl)}" alt="" style="opacity:1"><div class="job-status-badge badge-done">DONE</div>${sendToHtml}<button class="expand-btn" title="Büyüt">⛶</button><button class="job-delete-btn" title="Sil">✕</button>`;
   bindThumbEvents(thumb,firstUrl,taskType,jobId,'job');
   const body=card.querySelector('.job-body');
   const log=body.querySelector('.job-log'); if(log) log.remove();
   urls.forEach(url=>{
-    const a=document.createElement('a'); a.className='btn-download'; a.href=url; a.target='_blank';
-    a.download=isVideo?'video.mp4':'image.jpg';
+    const a=document.createElement('a'); a.className='btn-download';
+    a.href=`/api/proxy-media?url=${encodeURIComponent(url)}&dl=1`;
+    a.setAttribute('download', '');
     a.innerHTML=`⬇ İndir ${isVideo?'Video':'Görsel'}`; body.appendChild(a);
   });
   const prog=$('#prog-'+jobId); if(prog) prog.style.width='100%';
@@ -1140,6 +1364,8 @@ function buildSendToHtml(url, taskType){
 }
 
 let _portalMenu=null, _portalTarget=null;
+let _promptPortalMenu=null, _promptPortalTarget=null;
+function closePromptUsePortal(){ if(_promptPortalMenu){_promptPortalMenu.remove();_promptPortalMenu=null;_promptPortalTarget=null;} }
 function closeSendToPortal(){ if(_portalMenu){_portalMenu.remove();_portalMenu=null;_portalTarget=null;} }
 
 function openSendToPortal(btn, url, taskType){
@@ -1150,17 +1376,67 @@ function openSendToPortal(btn, url, taskType){
   if(left+190>window.innerWidth) left=window.innerWidth-198;
   if(left<8) left=8; if(top<8) top=8;
   const menu=document.createElement('div'); menu.className='send-to-portal';
-  menu.style.cssText=`position:fixed;left:${left}px;top:${top}px;`;
-  menu.innerHTML=`<button class="send-to-portal-item" data-action="ref">→ Referans Görsel</button>`;
+  menu.style.cssText=`position:fixed;left:${left}px;top:${top}px;z-index:9000;`;
+  menu.innerHTML=`
+    <button class="send-to-portal-item" data-action="video-ref">→ Referans Görsel yap (Video üretimi)</button>
+    <button class="send-to-portal-item" data-action="image-ref">→ Referans Görsel yap (Görsel üretimi)</button>
+  `;
   menu.querySelectorAll('.send-to-portal-item').forEach(item=>{
     item.addEventListener('click',e=>{ e.stopPropagation(); closeSendToPortal(); handleSendTo(item.dataset.action,url,taskType); });
   });
   document.body.appendChild(menu); _portalMenu=menu; _portalTarget=btn;
 }
 
-document.addEventListener('click',e=>{ if(_portalMenu && !_portalMenu.contains(e.target) && e.target!==_portalTarget) closeSendToPortal(); });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSendToPortal(); });
-window.addEventListener('scroll',closeSendToPortal,true);
+function openPromptPortal(btn, text){
+  closePromptUsePortal();
+  const rect=btn.getBoundingClientRect();
+  let left=rect.left, top=rect.bottom+4;
+  if(top+160>window.innerHeight) top=rect.top-164;
+  if(left+190>window.innerWidth) left=window.innerWidth-198;
+  if(left<8) left=8; if(top<8) top=8;
+  
+  const menu=document.createElement('div'); menu.className='send-to-portal';
+  menu.style.cssText=`position:fixed;left:${left}px;top:${top}px;z-index:9000;`;
+  menu.innerHTML=`
+    <button class="send-to-portal-item" data-target="video-prompt">→ Video (Pozitif Prompt)</button>
+    <button class="send-to-portal-item" data-target="video-neg">→ Video (Negatif Prompt)</button>
+    <button class="send-to-portal-item" data-target="image-prompt">→ Görsel (Pozitif Prompt)</button>
+    <button class="send-to-portal-item" data-target="image-neg">→ Görsel (Negatif Prompt)</button>
+  `;
+  menu.querySelectorAll('.send-to-portal-item').forEach(item=>{
+    item.addEventListener('click',e=>{
+      e.stopPropagation();
+      closePromptUsePortal();
+      const target = item.dataset.target;
+      if (target === 'video-prompt') {
+        selectTask('video');
+        state.form.prompt = text;
+      } else if (target === 'video-neg') {
+        selectTask('video');
+        state.form.negative_prompt = text;
+      } else if (target === 'image-prompt') {
+        selectTask('image');
+        state.form.prompt = text;
+      } else if (target === 'image-neg') {
+        selectTask('image');
+        state.form.negative_prompt = text;
+      }
+      buildForm();
+      toast('✅ Prompt aktarıldı', 'success');
+    });
+  });
+  document.body.appendChild(menu); _promptPortalMenu=menu; _promptPortalTarget=btn;
+}
+
+document.addEventListener('click',e=>{
+  if(_portalMenu && !_portalMenu.contains(e.target) && e.target!==_portalTarget) closeSendToPortal();
+  if(_promptPortalMenu && !_promptPortalMenu.contains(e.target) && e.target!==_promptPortalTarget) closePromptUsePortal();
+  if(_capturePortalMenu && !_capturePortalMenu.contains(e.target) && e.target!==_capturePortalTarget) closeCapturePortal();
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') { closeSendToPortal(); closePromptUsePortal(); closeCapturePortal(); }
+});
+window.addEventListener('scroll',()=>{ closeSendToPortal(); closePromptUsePortal(); closeCapturePortal(); },true);
 
 async function handleSendTo(action, url, taskType){
   toast('⏳ Aktarılıyor...','info',2000);
@@ -1169,17 +1445,38 @@ async function handleSendTo(action, url, taskType){
     if(taskType==='video') file=await captureVideoFirstFrame(url);
     else file=await fetchAsFile(url,'result.jpg');
     const dataUrl=await readAsDataURL(file);
-    state.i2vImagePreview={name:file.name,dataUrl};
     const fd=new FormData(); fd.append('file',file);
     const r=await fetch('/api/upload',{method:'POST',body:fd}); const j=await r.json();
-    if(r.ok) state.i2vImageUrl=j.url;
-    if(state.task==='video'){
+    if(!r.ok) throw new Error(j.error || 'Yükleme başarısız');
+
+    if(action==='video-ref'){
+      state.i2vImagePreview={name:file.name,dataUrl};
+      state.i2vImageUrl=j.url;
+      state.task='video';
+      $$('#task-tabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.task === 'video'));
       const modeKeys=Object.keys(state.models[state.model].modes);
       const i2vMode=modeKeys.find(k=>k.includes('image'));
-      if(i2vMode && state.mode!==i2vMode){ state.mode=i2vMode; state.form={}; }
+      if(i2vMode && state.mode!==i2vMode){ state.mode=i2vMode; }
+      toast('✅ Video referans görseli olarak ayarlandı','success');
+    } else if(action==='image-ref'){
+      state.task='image';
+      $$('#task-tabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.task === 'image'));
+      const modelKeys = Object.keys(state.models).filter(k => state.models[k].type === 'image');
+      if (!modelKeys.includes(state.model)) {
+        state.model = modelKeys[0];
+        state.mode = Object.keys(state.models[state.model].modes)[0];
+      }
+      const modeCfg = state.models[state.model].modes[state.mode];
+      const maxRef = modeCfg.max_ref_images || 9;
+      if(state.refImagePreviews.length >= maxRef){
+        toast(`⚠️ Maksimum ${maxRef} referans görsel ekleyebilirsiniz.`,'warning');
+        return;
+      }
+      state.refImagePreviews.push({name:file.name,dataUrl});
+      state.refImageUrls.push(j.url);
+      toast('✅ Görsel referansı olarak eklendi','success');
     }
     buildForm();
-    toast('✅ Referans görsel olarak ayarlandı','success');
   }catch(e){ toast('❌ Aktarım başarısız: '+e.message,'error'); }
 }
 
@@ -1251,6 +1548,7 @@ function openExpandModal(url,type){
 }
 
 function closeExpandModal(){
+  closeCapturePortal();
   $('#expand-modal').classList.remove('show');
   $('#expand-inner').innerHTML=''; document.body.style.overflow='';
   if(frameTimeInterval){clearInterval(frameTimeInterval);frameTimeInterval=null;}
@@ -1260,35 +1558,130 @@ $('#expand-close').addEventListener('click',closeExpandModal);
 $('#expand-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeExpandModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeExpandModal();});
 
-$('#capture-ref-btn').addEventListener('click',async ()=>{
-  const vid=$('#expand-video'); if(!vid) return;
-  const btn=$('#capture-ref-btn'); btn.disabled=true;
-  const origText=btn.textContent; btn.textContent='⏳ Yakalanıyor...';
-  const seekTime=vid.currentTime;
-  try{
+let _capturePortalMenu = null, _capturePortalTarget = null;
+function closeCapturePortal(){ if(_capturePortalMenu){_capturePortalMenu.remove();_capturePortalMenu=null;_capturePortalTarget=null;} }
+
+function openCapturePortal(btn, vid) {
+  closeCapturePortal();
+  const rect = btn.getBoundingClientRect();
+  let left = rect.left, top = rect.bottom + 4;
+  if (top + 80 > window.innerHeight) top = rect.top - 84;
+  if (left + 190 > window.innerWidth) left = window.innerWidth - 198;
+  if (left < 8) left = 8; if (top < 8) top = 8;
+
+  const menu = document.createElement('div');
+  menu.className = 'send-to-portal';
+  menu.style.cssText = `position:fixed;left:${left}px;top:${top}px;z-index:9000;`;
+  menu.innerHTML = `
+    <button class="send-to-portal-item" data-action="video-ref">→ Video (Referans Görsel)</button>
+    <button class="send-to-portal-item" data-action="image-ref">→ Görsel (Referans Görsel)</button>
+  `;
+
+  menu.querySelectorAll('.send-to-portal-item').forEach(item => {
+    item.addEventListener('click', async e => {
+      e.stopPropagation();
+      const action = item.dataset.action;
+      closeCapturePortal();
+      await executeCapture(action, vid);
+    });
+  });
+
+  document.body.appendChild(menu);
+  _capturePortalMenu = menu;
+  _capturePortalTarget = btn;
+}
+
+async function executeCapture(action, vid) {
+  if (!vid) return;
+
+  if (action === 'image-ref') {
+    const imgModel = state.imageModel || Object.keys(state.models).find(k => state.models[k].type === 'image');
+    if (imgModel) {
+      const imgMode = state.imageMode || Object.keys(state.models[imgModel].modes)[0];
+      const modeCfg = state.models[imgModel].modes[imgMode];
+      const maxRef = modeCfg.max_ref_images || 9;
+      if (state.refImagePreviews.length >= maxRef) {
+        toast(`⚠️ Maksimum ${maxRef} referans görsel ekleyebilirsiniz.`, 'warning');
+        return;
+      }
+    }
+  }
+
+  const btn = $('#capture-ref-btn');
+  btn.disabled = true;
+  const origText = btn.textContent;
+  btn.textContent = '⏳ Yakalanıyor...';
+  const seekTime = vid.currentTime;
+  try {
     let file;
-    const canvas=document.getElementById('frame-canvas');
-    canvas.width=vid.videoWidth||1280; canvas.height=vid.videoHeight||720;
-    canvas.getContext('2d').drawImage(vid,0,0);
-    try{
+    const canvas = document.getElementById('frame-canvas');
+    canvas.width = vid.videoWidth || 1280;
+    canvas.height = vid.videoHeight || 720;
+    canvas.getContext('2d').drawImage(vid, 0, 0);
+    try {
       canvas.toDataURL();
-      file=await new Promise((res,rej)=>{canvas.toBlob(blob=>{if(blob)res(new File([blob],`frame_${Math.round(seekTime)}s.jpg`,{type:'image/jpeg'}));else rej(new Error('Blob failed'));},'image/jpeg',0.92);});
-    }catch(corsErr){ file=await captureFrameAtTime(currentExpandUrl,seekTime); }
+      file = await new Promise((res, rej) => {
+        canvas.toBlob(blob => {
+          if (blob) res(new File([blob], `frame_${Math.round(seekTime)}s.jpg`, { type: 'image/jpeg' }));
+          else rej(new Error('Blob failed'));
+        }, 'image/jpeg', 0.92);
+      });
+    } catch (corsErr) {
+      file = await captureFrameAtTime(currentExpandUrl, seekTime);
+    }
+    
     closeExpandModal();
-    const dataUrl=await readAsDataURL(file);
-    state.i2vImagePreview={name:file.name,dataUrl};
-    const fd=new FormData(); fd.append('file',file);
-    const r=await fetch('/api/upload',{method:'POST',body:fd}); const j=await r.json();
-    if(r.ok) state.i2vImageUrl=j.url;
-    if(state.task==='video'){
-      const modeKeys=Object.keys(state.models[state.model].modes);
-      const i2vMode=modeKeys.find(k=>k.includes('image'));
-      if(i2vMode && state.mode!==i2vMode){state.mode=i2vMode;state.form={};}
+    const dataUrl = await readAsDataURL(file);
+    const fd = new FormData();
+    fd.append('file', file);
+    const r = await fetch('/api/upload', { method: 'POST', body: fd });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'Yükleme başarısız');
+
+    if (action === 'video-ref') {
+      state.i2vImagePreview = { name: file.name, dataUrl };
+      state.i2vImageUrl = j.url;
+      state.task = 'video';
+      $$('#task-tabs .tab').forEach(t => t.classList.toggle('active', t.dataset.task === 'video'));
+      const modeKeys = Object.keys(state.models[state.model].modes);
+      const i2vMode = modeKeys.find(k => k.includes('image'));
+      if (i2vMode && state.mode !== i2vMode) {
+        state.mode = i2vMode;
+        state.form = {};
+      }
+      toast(`📷 ${formatTime(seekTime)} → Video Referansı yapıldı`, 'success');
+    } else if (action === 'image-ref') {
+      state.task = 'image';
+      $$('#task-tabs .tab').forEach(t => t.classList.toggle('active', t.dataset.task === 'image'));
+      const modelKeys = Object.keys(state.models).filter(k => state.models[k].type === 'image');
+      if (!modelKeys.includes(state.model)) {
+        state.model = modelKeys[0];
+        state.mode = Object.keys(state.models[state.model].modes)[0];
+      }
+      const modeCfg = state.models[state.model].modes[state.mode];
+      state.refImagePreviews.push({ name: file.name, dataUrl });
+      state.refImageUrls.push(j.url);
+      toast(`📷 ${formatTime(seekTime)} → Görsel Referansı olarak eklendi`, 'success');
     }
     buildForm();
-    toast(`📷 ${formatTime(seekTime)} → Referans Görsel`,'success');
-  }catch(e){ toast('❌ Frame alınamadı: '+e.message,'error'); }
-  finally{ btn.disabled=false; btn.textContent=origText; }
+  } catch (e) {
+    toast('❌ Frame alınamadı: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origText;
+  }
+}
+
+$('#capture-ref-btn').addEventListener('click', e => {
+  e.stopPropagation();
+  const vid = $('#expand-video');
+  if (!vid) return;
+  const btn = $('#capture-ref-btn');
+  if (_capturePortalTarget === btn) {
+    closeCapturePortal();
+    return;
+  }
+  openCapturePortal(btn, vid);
 });
 
 async function captureFrameAtTime(url,seekTime){
@@ -1326,7 +1719,7 @@ async function deleteGalleryItem(id){ try{await fetch('/api/gallery/'+id,{method
 function renderGalleryCard(job,prepend=true){
   $('#gallery-empty').style.display='none';
   const isVideo=job.taskType==='video';
-  const sendToHtml=buildSendToHtml(job.url,job.taskType);
+  const sendToHtml=isVideo ? '' : buildSendToHtml(job.url,job.taskType);
   const card=document.createElement('div'); card.className='job-card'; card.id='gallery-'+job.id;
   const mediaHtml=isVideo?`<video src="${escapeHtml(job.url)}" autoplay loop muted playsinline></video>`:`<img src="${escapeHtml(job.url)}" alt="" style="opacity:1">`;
   card.innerHTML=`
@@ -1334,7 +1727,7 @@ function renderGalleryCard(job,prepend=true){
     <div class="job-body">
       <div class="prompt-row"><div class="job-prompt" title="${escapeHtml(job.prompt)}">${escapeHtml(job.prompt)}</div><button class="copy-prompt-btn" data-prompt="${escapeHtml(job.prompt)}">📋</button></div>
       <div class="job-meta"><span class="meta-tag">${(job.taskType||'').toUpperCase()}</span><span class="meta-tag">${job.model||''}</span></div>
-      <a class="btn-download" href="${escapeHtml(job.url)}" target="_blank" download="result.${isVideo?'mp4':'jpg'}">⬇ İndir</a>
+      <a class="btn-download" href="/api/proxy-media?url=${encodeURIComponent(job.url)}&dl=1" download>⬇ İndir</a>
     </div>`;
   card.querySelector('.copy-prompt-btn').addEventListener('click',function(){copyText(this.dataset.prompt);});
   bindThumbEvents(card.querySelector('.job-thumb'),job.url,job.taskType,job.id,'gallery');
@@ -1356,32 +1749,118 @@ function renderPromptLibrary(){
   if(!state.savedPrompts.length){empty.style.display='';return;}
   empty.style.display='none';
   state.savedPrompts.forEach(p=>{
-    const card=document.createElement('div'); card.className='plib-card';
-    card.innerHTML=`<div class="plib-text">${escapeHtml(p.text)}</div><div class="plib-actions"><button class="plib-act-btn use">↗ Kullan</button><button class="plib-act-btn del">✕ Sil</button></div>`;
-    card.querySelector('.plib-act-btn.use').addEventListener('click',()=>{
-      state.form.prompt=p.text; buildForm();
-      $$('#results-tabs .results-tab').forEach(t=>t.classList.remove('active'));
-      $$('.tab-panel').forEach(tp=>tp.classList.remove('active'));
-      $$('#results-tabs .results-tab')[0].classList.add('active');
-      $('#tab-jobs').classList.add('active');
-      toast('✅ Prompt alana aktarıldı','success');
-    });
-    card.querySelector('.plib-act-btn.del').addEventListener('click',async ()=>{
-      await fetch('/api/prompts/'+p.id,{method:'DELETE'});
-      state.savedPrompts=state.savedPrompts.filter(x=>x.id!==p.id);
-      renderPromptLibrary();
-    });
+    const card=document.createElement('div'); card.className='plib-card'; card.id=`plib-${p.id}`;
+    card.innerHTML=`
+      <div class="plib-card-inputs">
+        <input type="text" class="plib-card-title-input" value="${escapeHtml(p.title || '')}" placeholder="Başlıksız Prompt" readonly>
+        <div class="plib-card-text-display" title="${escapeHtml(p.text)}">${escapeHtml(p.text)}</div>
+        <textarea class="plib-card-text-input" readonly>${escapeHtml(p.text)}</textarea>
+      </div>
+      <div class="plib-actions">
+        <button class="plib-act-btn use">↗ Kullan</button>
+        <button class="plib-act-btn edit-btn">✏️ Düzenle</button>
+        <button class="plib-act-btn save-btn" style="display:none; border-color:var(--success); color:var(--success)">💾 Kaydet</button>
+        <button class="plib-act-btn cancel-btn" style="display:none">Vazgeç</button>
+        <button class="plib-act-btn del">✕ Sil</button>
+      </div>
+    `;
+
+    const titleInp = card.querySelector('.plib-card-title-input');
+    const textInp = card.querySelector('.plib-card-text-input');
+    const editBtn = card.querySelector('.edit-btn');
+    const saveBtn = card.querySelector('.save-btn');
+    const cancelBtn = card.querySelector('.cancel-btn');
+    const useBtn = card.querySelector('.use');
+    const delBtn = card.querySelector('.del');
+
+    const adjustHeight = () => {
+      textInp.style.height = 'auto';
+      textInp.style.height = textInp.scrollHeight + 'px';
+    };
+
+    editBtn.onclick = () => {
+      card.classList.add('editing');
+      titleInp.removeAttribute('readonly');
+      textInp.removeAttribute('readonly');
+      editBtn.style.display = 'none';
+      useBtn.style.display = 'none';
+      delBtn.style.display = 'none';
+      saveBtn.style.display = '';
+      cancelBtn.style.display = '';
+      adjustHeight();
+    };
+
+    cancelBtn.onclick = () => {
+      card.classList.remove('editing');
+      titleInp.setAttribute('readonly', '');
+      textInp.setAttribute('readonly', '');
+      titleInp.value = p.title || '';
+      textInp.value = p.text;
+      editBtn.style.display = '';
+      useBtn.style.display = '';
+      delBtn.style.display = '';
+      saveBtn.style.display = 'none';
+      cancelBtn.style.display = 'none';
+      adjustHeight();
+    };
+
+    textInp.oninput = adjustHeight;
+
+    saveBtn.onclick = async () => {
+      const newTitle = titleInp.value.trim();
+      const newText = textInp.value.trim();
+      if (!newText) {
+        toast('⚠️ Prompt boş olamaz.', 'warning');
+        return;
+      }
+      try {
+        const updated = await api('/api/prompts', {
+          method: 'POST',
+          body: { id: p.id, title: newTitle, text: newText }
+        });
+        p.title = updated.title;
+        p.text = updated.text;
+        toast('✅ Prompt güncellendi', 'success');
+        renderPromptLibrary();
+      } catch (e) {
+        toast('Hata: ' + e.message, 'error');
+      }
+    };
+
+    useBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (_promptPortalTarget === useBtn) {
+        closePromptUsePortal();
+        return;
+      }
+      openPromptPortal(useBtn, p.text);
+    };
+
+    delBtn.onclick = async () => {
+      const ok = await confirmModal('Promptu sil?','Kayıtlı prompt silinecek.');
+      if(!ok) return;
+      try {
+        await fetch('/api/prompts/'+p.id,{method:'DELETE'});
+        state.savedPrompts=state.savedPrompts.filter(x=>x.id!==p.id);
+        renderPromptLibrary();
+        toast('✅ Prompt silindi','success');
+      } catch(e) {
+        toast('Hata: '+e.message,'error');
+      }
+    };
+
     list.appendChild(card);
   });
 }
 
 $('#plib-save-btn').addEventListener('click',async ()=>{
   const inp=$('#plib-input'); const text=inp.value.trim();
+  const titleInp=$('#plib-title-input'); const title=(titleInp?.value||'').trim();
   if(!text){toast('⚠️ Prompt girin.','warning');return;}
   try{
-    const saved=await api('/api/prompts',{method:'POST',body:{text}});
+    const saved=await api('/api/prompts',{method:'POST',body:{text,title}});
     state.savedPrompts.unshift(saved); renderPromptLibrary();
-    inp.value=''; toast('✅ Prompt kaydedildi!','success');
+    inp.value=''; if(titleInp) titleInp.value=''; toast('✅ Prompt kaydedildi!','success');
   }catch(e){toast('Hata: '+e.message,'error');}
 });
 
@@ -1476,6 +1955,7 @@ async function restoreJobs(){
       }
     });
   }catch(e){}
+  updateJobsCount();
 }
 
 (async () => {
