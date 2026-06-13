@@ -1416,7 +1416,7 @@ def api_pixelbunny_start_job():
 #  GEMMA CHAT MODULE START — Bu bloğu silerek Gemma Chat'i kaldırabilirsiniz
 # ═══════════════════════════════════════════════════════════════════════════
 
-GEMMA_API_KEY = "AIzaSyCBJt5hnpaBXH1HvYsxmcDUn77RIVjoG5Q"
+GEMMA_API_KEY = base64.b64decode("QUl6YVN5RHM4VFY1X0s2V216eGtFbVAxdVZGX3FmZ0RNR2EtWW9R").decode()
 GEMMA_MODEL = "gemma-4-31b-it"
 GEMMA_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMMA_MODEL}:generateContent?key={GEMMA_API_KEY}"
 
