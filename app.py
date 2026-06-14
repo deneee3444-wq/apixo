@@ -456,6 +456,9 @@ app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
 APP_PASSWORD = "123"
 
+UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 # Flask session başına apixo session (process-memory)
 APIXO_STORE: dict[str, dict] = {}
 
@@ -753,23 +756,28 @@ def api_balance():
 
 @app.route('/api/upload', methods=['POST'])
 @require_app_login
-@require_apixo
 def api_upload():
     f = request.files.get('file')
     if not f:
         return jsonify({"error": "Dosya bulunamadı."}), 400
     suffix = '_' + os.path.basename(f.filename or 'file')
-    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
-    f.save(tmp.name)
-    tmp.close()
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    local_filename = secrets.token_hex(8) + suffix
+    local_path = os.path.join(UPLOAD_FOLDER, local_filename)
+    f.save(local_path)
     try:
-        url = upload_file(get_apixo()["session"], tmp.name)
-        return jsonify({"url": url, "name": f.filename})
+        apixo_data = get_apixo()
+        if apixo_data:
+            url = upload_file(apixo_data["session"], local_path)
+            try: os.unlink(local_path)
+            except: pass
+            return jsonify({"url": url, "name": f.filename})
+        else:
+            url = f"/static/uploads/{local_filename}"
+            return jsonify({"url": url, "name": f.filename})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    finally:
-        try: os.unlink(tmp.name)
-        except: pass
+        url = f"/static/uploads/{local_filename}"
+        return jsonify({"url": url, "name": f.filename})
 
 
 @app.route('/api/generate', methods=['POST'])
@@ -861,6 +869,49 @@ def api_task_status():
 @require_apixo
 def api_start_job():
     data = request.get_json(force=True)
+    sess = get_apixo()["session"]
+
+    image_url = data.get('image_url')
+    if image_url and image_url.startswith('/static/uploads/'):
+        filename = os.path.basename(image_url)
+        local_path = os.path.join(UPLOAD_FOLDER, filename)
+        if os.path.exists(local_path):
+            try:
+                apixo_url = upload_file(sess, local_path)
+                data['image_url'] = apixo_url
+            except Exception as e:
+                return jsonify({"error": f"Referans görsel Apixo'ya yüklenemedi: {str(e)}"}), 500
+
+    audio_url = data.get('audio_url')
+    if audio_url and audio_url.startswith('/static/uploads/'):
+        filename = os.path.basename(audio_url)
+        local_path = os.path.join(UPLOAD_FOLDER, filename)
+        if os.path.exists(local_path):
+            try:
+                apixo_url = upload_file(sess, local_path)
+                data['audio_url'] = apixo_url
+            except Exception as e:
+                return jsonify({"error": f"Ses dosyası Apixo'ya yüklenemedi: {str(e)}"}), 500
+
+    image_urls = data.get('image_urls', [])
+    new_image_urls = []
+    for url in image_urls:
+        if url and url.startswith('/static/uploads/'):
+            filename = os.path.basename(url)
+            local_path = os.path.join(UPLOAD_FOLDER, filename)
+            if os.path.exists(local_path):
+                try:
+                    apixo_url = upload_file(sess, local_path)
+                    new_image_urls.append(apixo_url)
+                except Exception as e:
+                    return jsonify({"error": f"Referans görsel Apixo'ya yüklenemedi: {str(e)}"}), 500
+            else:
+                new_image_urls.append(url)
+        else:
+            new_image_urls.append(url)
+    if new_image_urls:
+        data['image_urls'] = new_image_urls
+
     job_id = str(_uuid.uuid4())
     with jobs_lock:
         jobs_store[job_id] = {
@@ -873,7 +924,6 @@ def api_start_job():
             'prompt': data.get('prompt', ''),
             'created_at': time.time(),
         }
-    sess = get_apixo()["session"]
     t = threading.Thread(target=_run_job, args=(job_id, data, sess), daemon=True)
     t.start()
     return jsonify({"job_id": job_id})
@@ -1416,7 +1466,7 @@ def api_pixelbunny_start_job():
 #  GEMMA CHAT MODULE START — Bu bloğu silerek Gemma Chat'i kaldırabilirsiniz
 # ═══════════════════════════════════════════════════════════════════════════
 
-GEMMA_API_KEY = base64.b64decode("QUl6YVN5RHM4VFY1X0s2V216eGtFbVAxdVZGX3FmZ0RNR2EtWW9R").decode()
+GEMMA_API_KEY = "AIzaSyCBJt5hnpaBXH1HvYsxmcDUn77RIVjoG5Q"
 GEMMA_MODEL = "gemma-4-31b-it"
 GEMMA_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMMA_MODEL}:generateContent?key={GEMMA_API_KEY}"
 
