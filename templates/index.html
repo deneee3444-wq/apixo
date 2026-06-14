@@ -772,12 +772,45 @@ header.topbar{
   align-self: flex-start;
 }
 .chat-msg-bubble {
-  padding: 11px 15px;
+  position: relative;
+  padding: 11px 32px 11px 15px;
   border-radius: 12px;
   font-size: 13.5px;
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
+}
+.chat-copy-btn {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s, color 0.2s;
+}
+.chat-msg-bubble:hover .chat-copy-btn {
+  opacity: 1;
+}
+.chat-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+.chat-msg.model .chat-copy-btn {
+  color: var(--text-mute);
+  background: rgba(255, 255, 255, 0.04);
+}
+.chat-msg.model .chat-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
 }
 .chat-msg.user .chat-msg-bubble {
   background: var(--grad-2);
@@ -959,7 +992,12 @@ body.provider-pixelbunny #btn-refresh {
         </div>
 
         <div class="field">
-          <div class="field-label">Prompt</div>
+          <div class="field-header" style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="field-label" style="margin:0">Prompt</div>
+            <button type="button" class="btn btn-sm" id="pb-save-prompt-btn" style="padding:4px;min-width:auto;display:flex;align-items:center;justify-content:center;" title="Kütüphaneye Kaydet">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
           <textarea class="textarea" id="pb-prompt-input" rows="4" placeholder="Görsel tarifinizi yazın..."></textarea>
         </div>
 
@@ -1378,8 +1416,8 @@ function buildForm(){
   }
 
   // Prompt
-  form.appendChild(makeField('Prompt', textarea('prompt', state.form.prompt || '', 'Sahneyi tarif et…')));
-  form.appendChild(makeField('Negatif Prompt (opsiyonel)', textarea('negative_prompt', state.form.negative_prompt || '', 'İstenmeyen detaylar…', 60)));
+  form.appendChild(makeFieldWithSave('Prompt', textarea('prompt', state.form.prompt || '', 'Sahneyi tarif et…'), 'prompt'));
+  form.appendChild(makeFieldWithSave('Negatif Prompt (opsiyonel)', textarea('negative_prompt', state.form.negative_prompt || '', 'İstenmeyen detaylar…', 60), 'negative_prompt'));
 
   // ───── VIDEO
   if(state.task === 'video'){
@@ -1449,6 +1487,31 @@ function makeField(label, control){
   const w = document.createElement('div'); w.className = 'field';
   const l = document.createElement('div'); l.className = 'field-label'; l.textContent = label;
   w.appendChild(l); w.appendChild(control); return w;
+}
+function makeFieldWithSave(label, control, formKey){
+  const w = document.createElement('div'); w.className = 'field';
+  const header = document.createElement('div'); header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;';
+  const l = document.createElement('div'); l.className = 'field-label'; l.textContent = label; l.style.margin = '0';
+  const addBtn = document.createElement('button'); addBtn.type = 'button';
+  addBtn.className = 'btn btn-sm'; addBtn.style.cssText = 'padding:4px;min-width:auto;display:flex;align-items:center;justify-content:center;';
+  addBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+  addBtn.title = 'Kütüphaneye Kaydet';
+  addBtn.onclick = async () => {
+    const text = (control.value || '').trim();
+    if(!text){ toast('⚠️ Prompt boş.','warning'); return; }
+    const isNeg = formKey === 'negative_prompt';
+    const prefix = isNeg ? 'Negatif Prompt' : 'Prompt';
+    const existing = state.savedPrompts.filter(p => (p.title||'').startsWith(prefix));
+    const nextNum = existing.length + 1;
+    const title = prefix + ' ' + nextNum;
+    try {
+      const saved = await api('/api/prompts',{method:'POST',body:{text,title}});
+      state.savedPrompts.unshift(saved); renderPromptLibrary();
+      toast('✅ "'+title+'" olarak kaydedildi!','success');
+    } catch(e) { toast('Hata: '+e.message,'error'); }
+  };
+  header.appendChild(l); header.appendChild(addBtn);
+  w.appendChild(header); w.appendChild(control); return w;
 }
 function input(key, val, ph=''){
   const i = document.createElement('input'); i.className = 'input'; i.value = val; i.placeholder = ph;
@@ -1727,8 +1790,9 @@ function openSendToPortal(btn, url, taskType){
   const menu=document.createElement('div'); menu.className='send-to-portal';
   menu.style.cssText=`position:fixed;left:${left}px;top:${top}px;z-index:9000;`;
   menu.innerHTML=`
-    <button class="send-to-portal-item" data-action="video-ref">→ Referans Görsel yap (Video üretimi)</button>
-    <button class="send-to-portal-item" data-action="image-ref">→ Referans Görsel yap (Görsel üretimi)</button>
+    <button class="send-to-portal-item" data-action="video-ref">→ APIXO Video Referansı</button>
+    <button class="send-to-portal-item" data-action="image-ref">→ APIXO Görsel Referansı</button>
+    <button class="send-to-portal-item" data-action="pb-ref">→ PixelBunny Görsel Referansı</button>
   `;
   menu.querySelectorAll('.send-to-portal-item').forEach(item=>{
     item.addEventListener('click',e=>{ e.stopPropagation(); closeSendToPortal(); handleSendTo(item.dataset.action,url,taskType); });
@@ -1747,10 +1811,11 @@ function openPromptPortal(btn, text){
   const menu=document.createElement('div'); menu.className='send-to-portal';
   menu.style.cssText=`position:fixed;left:${left}px;top:${top}px;z-index:9000;`;
   menu.innerHTML=`
-    <button class="send-to-portal-item" data-target="video-prompt">→ Video (Pozitif Prompt)</button>
-    <button class="send-to-portal-item" data-target="video-neg">→ Video (Negatif Prompt)</button>
-    <button class="send-to-portal-item" data-target="image-prompt">→ Görsel (Pozitif Prompt)</button>
-    <button class="send-to-portal-item" data-target="image-neg">→ Görsel (Negatif Prompt)</button>
+    <button class="send-to-portal-item" data-target="video-prompt">→ APIXO Video Prompt</button>
+    <button class="send-to-portal-item" data-target="video-neg">→ APIXO Video Negatif Prompt</button>
+    <button class="send-to-portal-item" data-target="image-prompt">→ APIXO Görsel Prompt</button>
+    <button class="send-to-portal-item" data-target="image-neg">→ APIXO Görsel Negatif Prompt</button>
+    <button class="send-to-portal-item" data-target="pb-prompt">→ PixelBunny Görsel Prompt</button>
   `;
   menu.querySelectorAll('.send-to-portal-item').forEach(item=>{
     item.addEventListener('click',e=>{
@@ -1769,6 +1834,9 @@ function openPromptPortal(btn, text){
       } else if (target === 'image-neg') {
         selectTask('image');
         state.form.negative_prompt = text;
+      } else if (target === 'pb-prompt') {
+        selectProvider('pixelbunny');
+        $('#pb-prompt-input').value = text;
       }
       buildForm();
       toast('✅ Prompt aktarıldı', 'success');
@@ -1801,18 +1869,26 @@ async function handleSendTo(action, url, taskType){
     if(action==='video-ref'){
       state.i2vImagePreview={name:file.name,dataUrl};
       state.i2vImageUrl=j.url;
-      state.task='video';
-      $$('#task-tabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.task === 'video'));
+      selectProvider('apixo');
+      selectTask('video');
+      const videoModelKeys = Object.keys(state.models).filter(k => state.models[k].type === 'video');
+      if(!videoModelKeys.includes(state.model)){
+        state.model = videoModelKeys[0];
+        state.mode = Object.keys(state.models[state.model].modes)[0];
+      }
       const modeKeys=Object.keys(state.models[state.model].modes);
       const i2vMode=modeKeys.find(k=>k.includes('image'));
       if(i2vMode && state.mode!==i2vMode){ state.mode=i2vMode; }
       toast('✅ Video referans görseli olarak ayarlandı','success');
     } else if(action==='image-ref'){
-      state.task='image';
-      $$('#task-tabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.task === 'image'));
-      const modelKeys = Object.keys(state.models).filter(k => state.models[k].type === 'image');
-      if (!modelKeys.includes(state.model)) {
-        state.model = modelKeys[0];
+      selectProvider('apixo');
+      selectTask('image');
+      const imageModelKeys = Object.keys(state.models).filter(k => state.models[k].type === 'image');
+      if(!imageModelKeys.includes(state.model)){
+        state.model = imageModelKeys[0];
+        state.mode = Object.keys(state.models[state.model].modes)[0];
+      }
+      if(!state.models[state.model].modes[state.mode]){
         state.mode = Object.keys(state.models[state.model].modes)[0];
       }
       const modeCfg = state.models[state.model].modes[state.mode];
@@ -1824,6 +1900,18 @@ async function handleSendTo(action, url, taskType){
       state.refImagePreviews.push({name:file.name,dataUrl});
       state.refImageUrls.push(j.url);
       toast('✅ Görsel referansı olarak eklendi','success');
+    } else if(action==='pb-ref'){
+      selectProvider('pixelbunny');
+      if(state.pbRefImages.length >= 3){
+        toast('⚠️ PixelBunny maksimum 3 referans görsel destekler.','warning');
+        return;
+      }
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      const pbFile = new File([blob], file.name, {type: blob.type});
+      state.pbRefImages.push({file: pbFile, dataUrl});
+      renderPBPreviews();
+      toast('✅ PixelBunny referansı olarak eklendi','success');
     }
     buildForm();
   }catch(e){ toast('❌ Aktarım başarısız: '+e.message,'error'); }
@@ -2498,10 +2586,7 @@ async function generatePB() {
     createJobCard(j.job_id, prompt, state.pbModel, 'image');
     pollJob(j.job_id);
     
-    // Reset inputs
-    $('#pb-prompt-input').value = '';
-    state.pbRefImages = [];
-    renderPBPreviews();
+    // Inputs are NOT reset so user can iterate on the same prompt
     
     // Switch to Jobs Tab
     $$('#results-tabs .results-tab').forEach(t => t.classList.remove('active'));
@@ -2585,6 +2670,18 @@ function removeChatAttachedImage(idx) {
   renderChatImagePreviews();
 }
 
+function copyChatText(bubbleId, btn) {
+  const el = document.getElementById(bubbleId);
+  if(!el) return;
+  const text = el.childNodes[0].textContent.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.innerHTML = '✓';
+    setTimeout(() => {
+      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+    }, 1200);
+  });
+}
+
 function renderChatMessages() {
   const area = $('#chat-messages-area');
   area.innerHTML = '';
@@ -2600,10 +2697,8 @@ function renderChatMessages() {
         `</div>`;
     }
     
-    msgDiv.innerHTML = `
-      ${imagesHtml}
-      <div class="chat-msg-bubble">${escapeHtml(msg.text)}</div>
-    `;
+    const bubbleId = 'chat-bubble-' + Math.random().toString(36).slice(2,8);
+    msgDiv.innerHTML = `${imagesHtml}<div class="chat-msg-bubble" id="${bubbleId}">${escapeHtml(msg.text)}<button class="chat-copy-btn" title="Kopyala" onclick="copyChatText('${bubbleId}', this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></div>`;
     area.appendChild(msgDiv);
   });
   
@@ -2816,6 +2911,18 @@ $('#btn-generate').addEventListener('click', generate);
 // PixelBunny ve Gemma Chat Events
 $$('#provider-selector .tab').forEach(t => t.addEventListener('click', () => selectProvider(t.dataset.provider)));
 $('#pb-generate-btn').addEventListener('click', generatePB);
+$('#pb-save-prompt-btn').addEventListener('click', async () => {
+  const text = ($('#pb-prompt-input').value || '').trim();
+  if(!text){ toast('⚠️ Prompt boş.','warning'); return; }
+  const existing = state.savedPrompts.filter(p => (p.title||'').startsWith('Prompt'));
+  const nextNum = existing.length + 1;
+  const title = 'Prompt ' + nextNum;
+  try {
+    const saved = await api('/api/prompts',{method:'POST',body:{text,title}});
+    state.savedPrompts.unshift(saved); renderPromptLibrary();
+    toast('✅ "'+title+'" olarak kaydedildi!','success');
+  } catch(e) { toast('Hata: '+e.message,'error'); }
+});
 $('#chat-settings-toggle').addEventListener('click', toggleChatSettings);
 $('#chat-history-toggle').addEventListener('change', (e) => { state.chatHistoryEnabled = e.target.checked; });
 $('#chat-clear-history-btn').addEventListener('click', clearChatHistory);
