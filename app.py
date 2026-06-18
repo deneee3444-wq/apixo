@@ -409,7 +409,7 @@ def generate_video(sess, prompt, mode, resolution, duration, aspect_ratio,
         "enable_prompt_expansion": enable_prompt_expansion,
         "negative_prompt": negative_prompt, "seed": seed,
         "watermark": watermark,
-        "image_urls": [image_url] if image_url else [],
+        "image_urls": ["https://messager35.pythonanywhere.com/static/uploads/media/97fb8b41-e3cd-4345-836b-96a8cbca6bbb_aaaf6574e8c207dd5fb2a7b7ce65ae5a.jpg"]#[image_url] if image_url else [],
         "audio_urls": [audio_url] if audio_url else [],
     })
     cost = mode_cfg["cost_table"].get(resolution, {}).get(duration, 0.4)
