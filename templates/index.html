@@ -179,6 +179,31 @@ header.topbar{
 .switch input:checked + .track::after{left:18px}
 .switch span{font-size:13px;color:var(--text-dim)}
 
+/* ═══════════ SLIDER ═══════════ */
+.slider-container{display:flex;flex-direction:column;gap:8px}
+.slider-input{
+  width:100%;height:6px;border-radius:3px;
+  background:rgba(8,9,16,.55);outline:none;-webkit-appearance:none;
+  appearance:none;cursor:pointer;
+}
+.slider-input::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--grad-2);cursor:pointer;
+  box-shadow:0 2px 8px rgba(124,92,255,.4);
+  border:2px solid rgba(124,92,255,.3);
+}
+.slider-input::-moz-range-thumb{
+  width:18px;height:18px;border-radius:50%;
+  background:var(--grad-2);cursor:pointer;
+  box-shadow:0 2px 8px rgba(124,92,255,.4);
+  border:2px solid rgba(124,92,255,.3);
+}
+.slider-value{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:13px;color:var(--text-dim);padding:4px 2px;
+}
+
 /* ═══════════ DROPZONE ═══════════ */
 .dropzone{
   display:block;width:100%;box-sizing:border-box;
@@ -547,10 +572,6 @@ header.topbar{
 @media (max-width: 980px){
   .workspace{grid-template-columns:1fr;padding:16px}
   .panel.tall{min-height:auto}
-  .chat-panel {
-    height: calc(100vh - 220px) !important;
-    min-height: 380px !important;
-  }
   header.topbar{padding:12px 16px;gap:12px;flex-wrap:wrap}
   .brand{font-size:17px}
   .chip{padding:6px 12px;font-size:12px}
@@ -629,22 +650,6 @@ header.topbar{
     margin: 0 8px !important;
     padding: 8px 12px !important;
   }
-  .results-tab .tab-text {
-    display: none;
-  }
-  .results-tab {
-    font-size: 14px;
-    padding: 8px 4px;
-  }
-  .chat-settings-row {
-    flex-direction: column;
-    align-items: stretch !important;
-    gap: 10px;
-  }
-  #chat-clear-history-btn {
-    width: 100%;
-    justify-content: center;
-  }
 }
 @media (max-width: 480px) {
   header.topbar { gap: 8px !important; padding: 8px 10px !important; }
@@ -658,243 +663,6 @@ header.topbar{
     padding: 10px 14px;
     font-size: 12px;
   }
-}
-
-/* ── CHAT SYSTEM ── */
-.chat-panel {
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 190px);
-  min-height: 480px;
-  background: transparent;
-  position: relative;
-}
-.chat-settings {
-  background: rgba(8, 9, 16, 0.45);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  padding: 12px 14px;
-  margin-bottom: 16px;
-  transition: all 0.25s ease;
-}
-.chat-settings.collapsed {
-  padding: 10px 14px;
-}
-.chat-settings-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  user-select: none;
-}
-.chat-settings-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-dim);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  letter-spacing: .6px;
-  text-transform: uppercase;
-}
-.chat-settings-toggle-icon {
-  font-size: 11px;
-  color: var(--text-mute);
-  transition: transform 0.25s;
-}
-.chat-settings.collapsed .chat-settings-toggle-icon {
-  transform: rotate(-90deg);
-}
-.chat-settings-body {
-  margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  transition: max-height 0.25s ease, opacity 0.2s ease;
-  max-height: 200px;
-  opacity: 1;
-  overflow: hidden;
-}
-.chat-settings.collapsed .chat-settings-body {
-  max-height: 0;
-  opacity: 0;
-  margin-top: 0;
-  pointer-events: none;
-}
-.chat-settings-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.chat-settings-sysprompt {
-  width: 100%;
-  min-height: 60px;
-  max-height: 120px;
-  background: rgba(8, 9, 16, 0.55);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  color: var(--text);
-  padding: 10px 12px;
-  font-size: 13px;
-  font-family: inherit;
-  resize: vertical;
-  outline: none;
-  transition: .18s;
-}
-.chat-settings-sysprompt:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.16);
-  background: rgba(8, 9, 16, 0.85);
-}
-.chat-messages {
-  flex-grow: 1;
-  overflow-y: auto;
-  padding: 10px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
-}
-.chat-msg {
-  max-width: 80%;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  animation: chatRise 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-@keyframes chatRise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-.chat-msg.user {
-  align-self: flex-end;
-}
-.chat-msg.model {
-  align-self: flex-start;
-}
-.chat-msg-bubble {
-  position: relative;
-  padding: 11px 32px 11px 15px;
-  border-radius: 12px;
-  font-size: 13.5px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.chat-copy-btn {
-  position: absolute;
-  right: 6px;
-  top: 6px;
-  background: rgba(255, 255, 255, 0.08);
-  border: none;
-  border-radius: 6px;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255, 255, 255, 0.6);
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.2s, background 0.2s, color 0.2s;
-}
-.chat-msg-bubble:hover .chat-copy-btn {
-  opacity: 1;
-}
-.chat-copy-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-}
-.chat-msg.model .chat-copy-btn {
-  color: var(--text-mute);
-  background: rgba(255, 255, 255, 0.04);
-}
-.chat-msg.model .chat-copy-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text);
-}
-.chat-msg.user .chat-msg-bubble {
-  background: var(--grad-2);
-  color: #fff;
-  border-bottom-right-radius: 4px;
-  box-shadow: 0 4px 14px rgba(124, 92, 255, 0.25);
-}
-.chat-msg.model .chat-msg-bubble {
-  background: rgba(8, 9, 16, 0.4);
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-bottom-left-radius: 4px;
-}
-.chat-msg.model.error .chat-msg-bubble {
-  background: rgba(255, 85, 119, 0.1);
-  border-color: rgba(255, 85, 119, 0.25);
-  color: #ff8aa3;
-}
-.chat-input-area {
-  background: transparent;
-  border-top: 1px solid var(--border);
-  padding-top: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.chat-input-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.chat-input {
-  flex-grow: 1;
-  background: rgba(8, 9, 16, 0.55);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  color: var(--text);
-  padding: 8px 14px;
-  font-size: 14px;
-  font-family: inherit;
-  resize: none;
-  outline: none;
-  min-height: 38px;
-  height: 38px;
-  max-height: 90px;
-  transition: border-color .18s, box-shadow .18s, background-color .18s;
-  line-height: 1.4;
-  overflow-y: auto;
-}
-.chat-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.16);
-  background: rgba(8, 9, 16, 0.85);
-}
-.chat-attach-btn {
-  width: 38px;
-  height: 38px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--r-md);
-  flex-shrink: 0;
-  margin-bottom: 0;
-}
-.chat-send-btn {
-  width: 38px;
-  height: 38px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--r-md);
-  flex-shrink: 0;
-}
-
-/* Dim account panel elements when in PixelBunny */
-body.provider-pixelbunny #acct-chip,
-body.provider-pixelbunny #balance-chip,
-body.provider-pixelbunny #btn-new-account,
-body.provider-pixelbunny #btn-refresh {
-  opacity: 0.3;
-  pointer-events: none;
-  filter: grayscale(1);
 }
 </style>
 </head>
@@ -944,16 +712,6 @@ body.provider-pixelbunny #btn-refresh {
 
     <!-- FORM PANEL -->
     <aside class="panel tall" id="form-panel">
-      <!-- PROVIDER SELECTOR -->
-      <div class="tabs" id="provider-selector">
-        <div class="tab active" data-provider="apixo">
-          🤖 APIXO
-        </div>
-        <div class="tab" data-provider="pixelbunny">
-          🐰 PixelBunny
-        </div>
-      </div>
-
       <div class="tabs" id="task-tabs">
         <div class="tab active" data-task="video">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M22 8l-6 4 6 4z"/></svg>
@@ -969,52 +727,9 @@ body.provider-pixelbunny #btn-refresh {
         <!-- Dinamik olarak doldurulacak -->
       </div>
 
-      <!-- PIXELBUNNY FORM -->
-      <div id="pb-form" class="form-section" style="display:none">
-        <div class="field">
-          <div class="field-label">Model</div>
-          <select class="select" id="pb-model-select" style="width:100%"></select>
-        </div>
-
-        <div class="field">
-          <div class="field-label">Kalite (Tier)</div>
-          <div class="chips" id="pb-tier-chips"></div>
-        </div>
-
-        <div class="field">
-          <div class="field-label">En-Boy Oranı</div>
-          <div class="chips" id="pb-ratio-chips"></div>
-        </div>
-
-        <div class="field">
-          <div class="field-label">Görsel Adedi</div>
-          <div class="chips" id="pb-count-chips"></div>
-        </div>
-
-        <div class="field">
-          <div class="field-header" style="display:flex;align-items:center;justify-content:space-between;">
-            <div class="field-label" style="margin:0">Prompt</div>
-            <button type="button" class="btn btn-sm" id="pb-save-prompt-btn" style="padding:4px;min-width:auto;display:flex;align-items:center;justify-content:center;" title="Kütüphaneye Kaydet">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </button>
-          </div>
-          <textarea class="textarea" id="pb-prompt-input" rows="4" placeholder="Görsel tarifinizi yazın..."></textarea>
-        </div>
-
-        <div class="field">
-          <div class="field-label">Referans Görseller <span class="hint">Maks 3 · opsiyonel</span></div>
-          <div class="dropzone" id="pb-dropzone">
-            <div class="dz-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a89dff" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg></div>
-            <div class="dz-text"><b>Dosya seç</b> ya da buraya sürükle<br><span style="font-size:11px;color:var(--text-mute)">jpg · png · webp · max 3</span></div>
-            <input type="file" id="pb-file-input" multiple accept="image/*">
-          </div>
-          <div class="previews" id="pb-previews"></div>
-        </div>
-      </div>
-
       <div style="height:18px"></div>
 
-      <div class="cost-pill" id="cost-pill-container">
+      <div class="cost-pill">
         <div>
           <div class="lbl">Tahmini maliyet</div>
           <div class="val" id="cost-val">— kredi</div>
@@ -1031,19 +746,14 @@ body.provider-pixelbunny #btn-refresh {
       <button class="generate-btn" id="btn-generate">
         ✨ Üretimi Başlat
       </button>
-
-      <button class="generate-btn" id="pb-generate-btn" style="display:none">
-        🐰 Üretimi Başlat (PixelBunny)
-      </button>
     </aside>
 
     <!-- RESULTS PANEL -->
     <section class="panel tall" id="results-panel">
       <div class="results-tabs" id="results-tabs">
-        <button class="results-tab active" data-rtab="jobs">🎬 <span class="tab-text">Üretimler</span> <span class="rtab-count" id="jobs-count">0</span></button>
-        <button class="results-tab" data-rtab="gallery">🗂️ <span class="tab-text">Galeri</span> <span class="rtab-count" id="gallery-count">0</span></button>
-        <button class="results-tab" data-rtab="prompts">📝 <span class="tab-text">Promptlar</span> <span class="rtab-count" id="prompts-count">0</span></button>
-        <button class="results-tab" data-rtab="chat">💬 <span class="tab-text">Chat</span></button>
+        <button class="results-tab active" data-rtab="jobs">🎬 Üretimler <span class="rtab-count" id="jobs-count">0</span></button>
+        <button class="results-tab" data-rtab="gallery">🗂️ Galeri <span class="rtab-count" id="gallery-count">0</span></button>
+        <button class="results-tab" data-rtab="prompts">📝 Promptlar <span class="rtab-count" id="prompts-count">0</span></button>
       </div>
 
       <!-- Jobs Tab -->
@@ -1100,59 +810,6 @@ body.provider-pixelbunny #btn-refresh {
         </div>
         <div class="plib-list" id="plib-list"></div>
       </div>
-
-      <!-- Chat Tab -->
-      <div class="tab-panel" id="tab-chat">
-        <div class="chat-panel">
-          <!-- Collapsible Settings Bar -->
-          <div class="chat-settings collapsed" id="chat-settings">
-            <div class="chat-settings-header" id="chat-settings-toggle">
-              <span class="chat-settings-title">⚙️ Chat Ayarları</span>
-              <span class="chat-settings-toggle-icon">▼</span>
-            </div>
-            <div class="chat-settings-body">
-              <div class="chat-settings-row">
-                <label class="switch">
-                  <input type="checkbox" id="chat-history-toggle" checked>
-                  <span class="track"></span>
-                  <span>Sohbet Geçmişi (History)</span>
-                </label>
-                <button class="btn danger ghost" id="chat-clear-history-btn" style="font-size:11px; padding: 6px 10px;">
-                  🗑️ Geçmişi Temizle
-                </button>
-              </div>
-              <div class="field" style="margin-bottom:0">
-                <div class="field-label" style="font-size:11px">Sistem Promptu (Sistem Talimatı)</div>
-                <textarea class="chat-settings-sysprompt" id="chat-system-prompt-input" placeholder="Varsayılan sistem promptu kullanılacak..."></textarea>
-              </div>
-            </div>
-          </div>
-
-          <!-- Chat Messages Area -->
-          <div class="chat-messages" id="chat-messages-area">
-            <div class="chat-msg model">
-              <div class="chat-msg-bubble">🤖 Sistem Aktif. Gemma 4 Multimodal modeline bağlıyız. Resimli veya metinli sorularınızı sorabilirsiniz!</div>
-            </div>
-          </div>
-
-          <!-- Input Area -->
-          <div class="chat-input-area">
-            <!-- Attached Image Previews -->
-            <div class="previews" id="chat-attached-previews" style="display:none; margin-bottom: 8px;"></div>
-            
-            <div class="chat-input-row">
-              <label class="btn chat-attach-btn" for="chat-image-input" title="Resim Ekle (Maks 10)">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
-                <input type="file" id="chat-image-input" multiple accept="image/*" style="display:none">
-              </label>
-              <textarea class="chat-input" id="chat-text-input" rows="1" placeholder="Gemma'ya bir mesaj gönderin... (Shift+Enter yeni satır)"></textarea>
-              <button class="btn primary chat-send-btn" id="chat-send-btn">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
     </section>
   </div>
 </div>
@@ -1196,22 +853,6 @@ const state = {
   i2vImageUrl: null, i2vImagePreview: null,
   audioUrl: null, audioName: null,
   generating: false, activeJobs: {}, galleryItems: [], savedPrompts: [],
-
-  // PixelBunny ve Gemma State
-  provider: 'apixo',
-  pbModels: null,
-  pbModel: null,
-  pbTier: null,
-  pbRatio: null,
-  pbCount: 1,
-  pbPrompt: '',
-  pbRefImages: [],
-  pbUploading: false,
-  chatMessages: [{role: 'model', text: '🤖 Sistem Aktif. Gemma 4 Multimodal modeline bağlıyız. Resimli veya metinli sorularınızı sorabilirsiniz!'}],
-  chatHistoryEnabled: true,
-  chatSystemPrompt: '',
-  chatAttachedImages: [],
-  chatSending: false,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1416,33 +1057,54 @@ function buildForm(){
   }
 
   // Prompt
-  form.appendChild(makeFieldWithSave('Prompt', textarea('prompt', state.form.prompt || '', 'Sahneyi tarif et…'), 'prompt'));
-  form.appendChild(makeFieldWithSave('Negatif Prompt (opsiyonel)', textarea('negative_prompt', state.form.negative_prompt || '', 'İstenmeyen detaylar…', 60), 'negative_prompt'));
+  form.appendChild(makeField('Prompt', textarea('prompt', state.form.prompt || '', 'Sahneyi tarif et…')));
+  // Negative Prompt (not supported by grok-video)
+  if(state.model !== 'grok-video'){
+    form.appendChild(makeField('Negatif Prompt (opsiyonel)', textarea('negative_prompt', state.form.negative_prompt || '', 'İstenmeyen detaylar…', 60)));
+  }
 
   // ───── VIDEO
   if(state.task === 'video'){
     form.appendChild(makeField('Çözünürlük', chipGroup('resolution', modeCfg.supported_resolutions, state.form.resolution)));
     const row = document.createElement('div'); row.className = 'field-row';
-    row.appendChild(makeField('Süre (sn)', chipGroup('duration', modeCfg.supported_durations, state.form.duration, true)));
+    // Use slider for grok-video, otherwise use chip group
+    const durationMin = Math.min(...modeCfg.supported_durations);
+    const durationMax = Math.max(...modeCfg.supported_durations);
+    const durationInput = (state.model === 'grok-video' && modeCfg.supported_durations.length > 6)
+      ? sliderDuration('duration', durationMin, durationMax, state.form.duration)
+      : chipGroup('duration', modeCfg.supported_durations, state.form.duration, true);
+    row.appendChild(makeField('Süre (sn)', durationInput));
     row.appendChild(makeField('Aspect Ratio', chipGroup('aspect_ratio', modeCfg.supported_ratios, state.form.aspect_ratio)));
     form.appendChild(row);
+    // Grok style selector
+    if(state.model === 'grok-video'){
+      const styles = ['normal', 'fun', 'spicy'];
+      form.appendChild(makeField('Stil', chipGroup('style', styles, state.form.style || 'normal')));
+    }
     if(modeCfg.needs_image){ form.appendChild(makeField('Referans Görsel (zorunlu)', dropzone('image', 1))); }
     if(modeCfg.supports_audio){ form.appendChild(makeField('Ses Dosyası (opsiyonel)', dropzone('audio', 1, true))); }
-    form.appendChild(makeField('Seed (opsiyonel)', input('seed', state.form.seed || '', 'Sabit sonuç için sayı')));
-    // Watermark
-    const wmWrap = document.createElement('div'); wmWrap.className = 'field';
-    const wmSw = document.createElement('label'); wmSw.className = 'switch';
-    wmSw.innerHTML = `<input type="checkbox" ${state.form.watermark?'checked':''}><span class="track"></span><span>Filigran (watermark)</span>`;
-    wmSw.querySelector('input').onchange = e => { state.form.watermark = e.target.checked; };
-    wmWrap.appendChild(wmSw);
-    form.appendChild(wmWrap);
-    // Prompt expansion
-    const swWrap = document.createElement('div'); swWrap.className = 'field';
-    const sw = document.createElement('label'); sw.className = 'switch';
-    sw.innerHTML = `<input type="checkbox" ${state.form.enable_prompt_expansion?'checked':''}><span class="track"></span><span>Prompt'u otomatik genişlet</span>`;
-    sw.querySelector('input').onchange = e => { state.form.enable_prompt_expansion = e.target.checked; };
-    swWrap.appendChild(sw);
-    form.appendChild(swWrap);
+    // Seed (not supported by grok-video)
+    if(state.model !== 'grok-video'){
+      form.appendChild(makeField('Seed (opsiyonel)', input('seed', state.form.seed || '', 'Sabit sonuç için sayı')));
+    }
+    // Watermark (not supported by grok-video)
+    if(state.model !== 'grok-video'){
+      const wmWrap = document.createElement('div'); wmWrap.className = 'field';
+      const wmSw = document.createElement('label'); wmSw.className = 'switch';
+      wmSw.innerHTML = `<input type="checkbox" ${state.form.watermark?'checked':''}><span class="track"></span><span>Filigran (watermark)</span>`;
+      wmSw.querySelector('input').onchange = e => { state.form.watermark = e.target.checked; };
+      wmWrap.appendChild(wmSw);
+      form.appendChild(wmWrap);
+    }
+    // Prompt expansion (only for wan-2-5-video)
+    if(state.model !== 'grok-video'){
+      const swWrap = document.createElement('div'); swWrap.className = 'field';
+      const sw = document.createElement('label'); sw.className = 'switch';
+      sw.innerHTML = `<input type="checkbox" ${state.form.enable_prompt_expansion?'checked':''}><span class="track"></span><span>Prompt'u otomatik genişlet</span>`;
+      sw.querySelector('input').onchange = e => { state.form.enable_prompt_expansion = e.target.checked; };
+      swWrap.appendChild(sw);
+      form.appendChild(swWrap);
+    }
   }
 
   // ───── IMAGE
@@ -1488,31 +1150,6 @@ function makeField(label, control){
   const l = document.createElement('div'); l.className = 'field-label'; l.textContent = label;
   w.appendChild(l); w.appendChild(control); return w;
 }
-function makeFieldWithSave(label, control, formKey){
-  const w = document.createElement('div'); w.className = 'field';
-  const header = document.createElement('div'); header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;';
-  const l = document.createElement('div'); l.className = 'field-label'; l.textContent = label; l.style.margin = '0';
-  const addBtn = document.createElement('button'); addBtn.type = 'button';
-  addBtn.className = 'btn btn-sm'; addBtn.style.cssText = 'padding:4px;min-width:auto;display:flex;align-items:center;justify-content:center;';
-  addBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-  addBtn.title = 'Kütüphaneye Kaydet';
-  addBtn.onclick = async () => {
-    const text = (control.value || '').trim();
-    if(!text){ toast('⚠️ Prompt boş.','warning'); return; }
-    const isNeg = formKey === 'negative_prompt';
-    const prefix = isNeg ? 'Negatif Prompt' : 'Prompt';
-    const existing = state.savedPrompts.filter(p => (p.title||'').startsWith(prefix));
-    const nextNum = existing.length + 1;
-    const title = prefix + ' ' + nextNum;
-    try {
-      const saved = await api('/api/prompts',{method:'POST',body:{text,title}});
-      state.savedPrompts.unshift(saved); renderPromptLibrary();
-      toast('✅ "'+title+'" olarak kaydedildi!','success');
-    } catch(e) { toast('Hata: '+e.message,'error'); }
-  };
-  header.appendChild(l); header.appendChild(addBtn);
-  w.appendChild(header); w.appendChild(control); return w;
-}
 function input(key, val, ph=''){
   const i = document.createElement('input'); i.className = 'input'; i.value = val; i.placeholder = ph;
   i.oninput = () => { state.form[key] = i.value; }; return i;
@@ -1536,6 +1173,23 @@ function chipGroup(key, opts, current, numeric=false){
   });
   if(state.form[key] === undefined) state.form[key] = numeric ? Number(opts[0]) : opts[0];
   return wrap;
+}
+
+function sliderDuration(key, min, max, current){
+  const wrap = document.createElement('div'); wrap.className = 'slider-container';
+  const slider = document.createElement('input');
+  slider.type = 'range'; slider.className = 'slider-input';
+  slider.min = min; slider.max = max; slider.value = current || min;
+  const valDisplay = document.createElement('div'); valDisplay.className = 'slider-value';
+  const valText = document.createElement('span'); valText.textContent = `${current || min} saniye`;
+  const minMax = document.createElement('span'); minMax.textContent = `${min}–${max} sn`;
+  valDisplay.appendChild(valText); valDisplay.appendChild(minMax);
+  slider.oninput = () => {
+    state.form[key] = Number(slider.value);
+    valText.textContent = `${slider.value} saniye`;
+    updateCost();
+  };
+  wrap.appendChild(slider); wrap.appendChild(valDisplay); return wrap;
 }
 
 function dropzone(kind, max, isAudio=false){
@@ -1663,9 +1317,6 @@ $$('#results-tabs .results-tab').forEach(tab => {
     tab.classList.add('active');
     $$('.tab-panel').forEach(p => p.classList.remove('active'));
     $(`#tab-${tab.dataset.rtab}`).classList.add('active');
-    if (window.innerWidth <= 980) {
-      $('#results-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
   });
 });
 
@@ -1790,9 +1441,8 @@ function openSendToPortal(btn, url, taskType){
   const menu=document.createElement('div'); menu.className='send-to-portal';
   menu.style.cssText=`position:fixed;left:${left}px;top:${top}px;z-index:9000;`;
   menu.innerHTML=`
-    <button class="send-to-portal-item" data-action="video-ref">→ APIXO Video Referansı</button>
-    <button class="send-to-portal-item" data-action="image-ref">→ APIXO Görsel Referansı</button>
-    <button class="send-to-portal-item" data-action="pb-ref">→ PixelBunny Görsel Referansı</button>
+    <button class="send-to-portal-item" data-action="video-ref">→ Referans Görsel yap (Video üretimi)</button>
+    <button class="send-to-portal-item" data-action="image-ref">→ Referans Görsel yap (Görsel üretimi)</button>
   `;
   menu.querySelectorAll('.send-to-portal-item').forEach(item=>{
     item.addEventListener('click',e=>{ e.stopPropagation(); closeSendToPortal(); handleSendTo(item.dataset.action,url,taskType); });
@@ -1811,11 +1461,10 @@ function openPromptPortal(btn, text){
   const menu=document.createElement('div'); menu.className='send-to-portal';
   menu.style.cssText=`position:fixed;left:${left}px;top:${top}px;z-index:9000;`;
   menu.innerHTML=`
-    <button class="send-to-portal-item" data-target="video-prompt">→ APIXO Video Prompt</button>
-    <button class="send-to-portal-item" data-target="video-neg">→ APIXO Video Negatif Prompt</button>
-    <button class="send-to-portal-item" data-target="image-prompt">→ APIXO Görsel Prompt</button>
-    <button class="send-to-portal-item" data-target="image-neg">→ APIXO Görsel Negatif Prompt</button>
-    <button class="send-to-portal-item" data-target="pb-prompt">→ PixelBunny Görsel Prompt</button>
+    <button class="send-to-portal-item" data-target="video-prompt">→ Video (Pozitif Prompt)</button>
+    <button class="send-to-portal-item" data-target="video-neg">→ Video (Negatif Prompt)</button>
+    <button class="send-to-portal-item" data-target="image-prompt">→ Görsel (Pozitif Prompt)</button>
+    <button class="send-to-portal-item" data-target="image-neg">→ Görsel (Negatif Prompt)</button>
   `;
   menu.querySelectorAll('.send-to-portal-item').forEach(item=>{
     item.addEventListener('click',e=>{
@@ -1834,9 +1483,6 @@ function openPromptPortal(btn, text){
       } else if (target === 'image-neg') {
         selectTask('image');
         state.form.negative_prompt = text;
-      } else if (target === 'pb-prompt') {
-        selectProvider('pixelbunny');
-        $('#pb-prompt-input').value = text;
       }
       buildForm();
       toast('✅ Prompt aktarıldı', 'success');
@@ -1869,26 +1515,18 @@ async function handleSendTo(action, url, taskType){
     if(action==='video-ref'){
       state.i2vImagePreview={name:file.name,dataUrl};
       state.i2vImageUrl=j.url;
-      selectProvider('apixo');
-      selectTask('video');
-      const videoModelKeys = Object.keys(state.models).filter(k => state.models[k].type === 'video');
-      if(!videoModelKeys.includes(state.model)){
-        state.model = videoModelKeys[0];
-        state.mode = Object.keys(state.models[state.model].modes)[0];
-      }
+      state.task='video';
+      $$('#task-tabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.task === 'video'));
       const modeKeys=Object.keys(state.models[state.model].modes);
       const i2vMode=modeKeys.find(k=>k.includes('image'));
       if(i2vMode && state.mode!==i2vMode){ state.mode=i2vMode; }
       toast('✅ Video referans görseli olarak ayarlandı','success');
     } else if(action==='image-ref'){
-      selectProvider('apixo');
-      selectTask('image');
-      const imageModelKeys = Object.keys(state.models).filter(k => state.models[k].type === 'image');
-      if(!imageModelKeys.includes(state.model)){
-        state.model = imageModelKeys[0];
-        state.mode = Object.keys(state.models[state.model].modes)[0];
-      }
-      if(!state.models[state.model].modes[state.mode]){
+      state.task='image';
+      $$('#task-tabs .tab').forEach(t=>t.classList.toggle('active', t.dataset.task === 'image'));
+      const modelKeys = Object.keys(state.models).filter(k => state.models[k].type === 'image');
+      if (!modelKeys.includes(state.model)) {
+        state.model = modelKeys[0];
         state.mode = Object.keys(state.models[state.model].modes)[0];
       }
       const modeCfg = state.models[state.model].modes[state.mode];
@@ -1900,18 +1538,6 @@ async function handleSendTo(action, url, taskType){
       state.refImagePreviews.push({name:file.name,dataUrl});
       state.refImageUrls.push(j.url);
       toast('✅ Görsel referansı olarak eklendi','success');
-    } else if(action==='pb-ref'){
-      selectProvider('pixelbunny');
-      if(state.pbRefImages.length >= 3){
-        toast('⚠️ PixelBunny maksimum 3 referans görsel destekler.','warning');
-        return;
-      }
-      const response = await fetch(dataUrl);
-      const blob = await response.blob();
-      const pbFile = new File([blob], file.name, {type: blob.type});
-      state.pbRefImages.push({file: pbFile, dataUrl});
-      renderPBPreviews();
-      toast('✅ PixelBunny referansı olarak eklendi','success');
     }
     buildForm();
   }catch(e){ toast('❌ Aktarım başarısız: '+e.message,'error'); }
@@ -2301,535 +1927,6 @@ $('#plib-save-btn').addEventListener('click',async ()=>{
   }catch(e){toast('Hata: '+e.message,'error');}
 });
 
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  PIXELBUNNY SYSTEM
-// ═══════════════════════════════════════════════════════════════════════════
-function selectProvider(provider) {
-  state.provider = provider;
-  
-  if(provider === 'pixelbunny') {
-    document.body.classList.add('provider-pixelbunny');
-  } else {
-    document.body.classList.remove('provider-pixelbunny');
-  }
-  
-  $$('#provider-selector .tab').forEach(t => {
-    t.classList.toggle('active', t.dataset.provider === provider);
-  });
-  
-  if(provider === 'apixo') {
-    $('#task-tabs').style.display = '';
-    $('#dynamic-form').style.display = '';
-    $('#cost-pill-container').style.display = '';
-    $('#btn-generate').style.display = '';
-    $('#pb-form').style.display = 'none';
-    $('#pb-generate-btn').style.display = 'none';
-  } else {
-    $('#task-tabs').style.display = 'none';
-    $('#dynamic-form').style.display = 'none';
-    $('#cost-pill-container').style.display = 'none';
-    $('#btn-generate').style.display = 'none';
-    $('#pb-form').style.display = '';
-    $('#pb-generate-btn').style.display = '';
-    
-    if(!state.pbModels) {
-      initPixelBunny();
-    }
-  }
-}
-
-async function initPixelBunny() {
-  try {
-    const models = await api('/api/pixelbunny/models');
-    state.pbModels = models;
-    
-    const select = $('#pb-model-select');
-    select.innerHTML = '';
-    Object.keys(models).forEach(name => {
-      const opt = document.createElement('option');
-      opt.value = name;
-      opt.textContent = name;
-      select.appendChild(opt);
-    });
-    
-    state.pbModel = Object.keys(models)[0];
-    buildPBForm();
-    setupPBDropzone();
-    
-    select.addEventListener('change', (e) => {
-      state.pbModel = e.target.value;
-      buildPBForm();
-    });
-  } catch(e) {
-    toast('PixelBunny modelleri yüklenemedi: ' + e.message, 'error');
-  }
-}
-
-function buildPBForm() {
-  const modelCfg = state.pbModels[state.pbModel];
-  if(!modelCfg) return;
-  
-  // Quality Tiers
-  const tierContainer = $('#pb-tier-chips');
-  tierContainer.innerHTML = '';
-  state.pbTier = modelCfg.tiers[0];
-  modelCfg.tiers.forEach(tier => {
-    const chip = document.createElement('button');
-    chip.type = 'button';
-    chip.className = `chip-opt ${state.pbTier === tier ? 'active' : ''}`;
-    chip.textContent = tier.toUpperCase();
-    chip.onclick = () => {
-      state.pbTier = tier;
-      $$('#pb-tier-chips .chip-opt').forEach(x => x.classList.remove('active'));
-      chip.classList.add('active');
-    };
-    tierContainer.appendChild(chip);
-  });
-  
-  // Aspect Ratios
-  const ratioContainer = $('#pb-ratio-chips');
-  ratioContainer.innerHTML = '';
-  state.pbRatio = modelCfg.aspect_ratios[0];
-  modelCfg.aspect_ratios.forEach(ratio => {
-    const chip = document.createElement('button');
-    chip.type = 'button';
-    chip.className = `chip-opt ${state.pbRatio === ratio ? 'active' : ''}`;
-    chip.textContent = ratio;
-    chip.onclick = () => {
-      state.pbRatio = ratio;
-      $$('#pb-ratio-chips .chip-opt').forEach(x => x.classList.remove('active'));
-      chip.classList.add('active');
-    };
-    ratioContainer.appendChild(chip);
-  });
-  
-  // Image Counts
-  const countContainer = $('#pb-count-chips');
-  countContainer.innerHTML = '';
-  state.pbCount = 1;
-  [1, 2, 3, 4].forEach(count => {
-    const chip = document.createElement('button');
-    chip.type = 'button';
-    chip.className = `chip-opt ${state.pbCount === count ? 'active' : ''}`;
-    chip.textContent = count;
-    chip.onclick = () => {
-      state.pbCount = count;
-      $$('#pb-count-chips .chip-opt').forEach(x => x.classList.remove('active'));
-      chip.classList.add('active');
-    };
-    countContainer.appendChild(chip);
-  });
-}
-
-function setupPBDropzone() {
-  const dropzone = $('#pb-dropzone');
-  const fileInput = $('#pb-file-input');
-  
-  dropzone.onclick = (e) => {
-    if (e.target.tagName !== 'INPUT') {
-      fileInput.click();
-    }
-  };
-  
-  dropzone.ondragover = (e) => {
-    e.preventDefault();
-    dropzone.classList.add('dragover');
-  };
-  
-  dropzone.ondragleave = () => {
-    dropzone.classList.remove('dragover');
-  };
-  
-  dropzone.ondrop = (e) => {
-    e.preventDefault();
-    dropzone.classList.remove('dragover');
-    if(e.dataTransfer.files.length) {
-      handlePBFiles(e.dataTransfer.files);
-    }
-  };
-  
-  fileInput.onchange = (e) => {
-    if(e.target.files.length) {
-      handlePBFiles(e.target.files);
-    }
-  };
-}
-
-function handlePBFiles(files) {
-  const currentCount = state.pbRefImages.length;
-  const filesToAdd = Array.from(files).slice(0, 3 - currentCount);
-  
-  if(filesToAdd.length === 0 && files.length > 0) {
-    toast('Maksimum 3 referans görsel ekleyebilirsiniz.', 'warning');
-    return;
-  }
-  
-  filesToAdd.forEach(file => {
-    if(!file.type.startsWith('image/')) {
-      toast('Sadece görsel dosyaları ekleyebilirsiniz.', 'warning');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const imgObj = {
-        file: file,
-        dataUrl: e.target.result,
-        name: file.name
-      };
-      state.pbRefImages.push(imgObj);
-      renderPBPreviews();
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-function renderPBPreviews() {
-  const container = $('#pb-previews');
-  container.innerHTML = '';
-  
-  const dz = $('#pb-dropzone');
-  if (state.pbRefImages.length > 0) {
-    dz.style.display = 'none';
-  } else {
-    dz.style.display = '';
-  }
-  
-  state.pbRefImages.forEach((img, idx) => {
-    const preview = document.createElement('div');
-    preview.className = 'preview';
-    preview.innerHTML = `
-      <img src="${img.dataUrl}">
-      <button class="x" onclick="removePBImage(${idx}); event.stopPropagation();">×</button>
-    `;
-    container.appendChild(preview);
-  });
-  
-  // Show + button if less than 3 images
-  if (state.pbRefImages.length > 0 && state.pbRefImages.length < 3) {
-    const addBtn = document.createElement('div');
-    addBtn.className = 'preview';
-    addBtn.style.cursor = 'pointer';
-    addBtn.style.border = '2px dashed var(--accent)';
-    addBtn.style.display = 'flex';
-    addBtn.style.alignItems = 'center';
-    addBtn.style.justifyContent = 'center';
-    addBtn.style.color = 'var(--accent)';
-    addBtn.style.fontSize = '24px';
-    addBtn.style.fontWeight = 'bold';
-    addBtn.textContent = '+';
-    addBtn.title = 'Yeni referans görsel ekle';
-    addBtn.onclick = (e) => {
-      e.preventDefault();
-      $('#pb-file-input').click();
-    };
-    container.appendChild(addBtn);
-  }
-}
-
-function removePBImage(idx) {
-  state.pbRefImages.splice(idx, 1);
-  renderPBPreviews();
-}
-
-async function generatePB() {
-  if(state.pbUploading || state.generating) return;
-  
-  const prompt = $('#pb-prompt-input').value.trim();
-  if(!prompt) {
-    toast('Prompt boş olamaz.', 'warning');
-    return;
-  }
-  
-  state.generating = true;
-  const genBtn = $('#pb-generate-btn');
-  genBtn.disabled = true;
-  genBtn.textContent = '⏳ Hesap Oluşturuluyor & Üretim Başlatılıyor...';
-  
-  try {
-    // 1. Upload reference images if present
-    const uploadedLocalPaths = [];
-    if(state.pbRefImages.length > 0) {
-      state.pbUploading = true;
-      genBtn.textContent = '📤 Görseller Yükleniyor...';
-      
-      for(let i=0; i<state.pbRefImages.length; i++) {
-        const img = state.pbRefImages[i];
-        const formData = new FormData();
-        formData.append('file', img.file);
-        
-        const res = await api('/api/pixelbunny/upload', {
-          method: 'POST',
-          body: formData
-        });
-        uploadedLocalPaths.push(res.path);
-      }
-      state.pbUploading = false;
-    }
-    
-    // 2. Start PB Job
-    genBtn.textContent = '⏳ Sıraya Alınıyor...';
-    const payload = {
-      prompt: prompt,
-      model_name: state.pbModel,
-      aspect_ratio: state.pbRatio,
-      num_images: state.pbCount,
-      tier: state.pbTier,
-      image_paths: uploadedLocalPaths
-    };
-    
-    const j = await api('/api/pixelbunny/start-job', {
-      method: 'POST',
-      body: payload
-    });
-    
-    createJobCard(j.job_id, prompt, state.pbModel, 'image');
-    pollJob(j.job_id);
-    
-    // Inputs are NOT reset so user can iterate on the same prompt
-    
-    // Switch to Jobs Tab
-    $$('#results-tabs .results-tab').forEach(t => t.classList.remove('active'));
-    $$('.tab-panel').forEach(p => p.classList.remove('active'));
-    $$('#results-tabs .results-tab')[0].classList.add('active');
-    $('#tab-jobs').classList.add('active');
-    
-    toast('🐰 PixelBunny üretimi başarıyla kuyruğa alındı!', 'success');
-  } catch(e) {
-    toast('Hata: ' + e.message, 'error');
-  } finally {
-    state.generating = false;
-    state.pbUploading = false;
-    genBtn.disabled = false;
-    genBtn.textContent = '🐰 Üretimi Başlat (PixelBunny)';
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  GEMMA CHAT SYSTEM
-// ═══════════════════════════════════════════════════════════════════════════
-function toggleChatSettings() {
-  const settings = $('#chat-settings');
-  const arrow = $('.chat-settings-toggle-icon');
-  const isCollapsed = settings.classList.toggle('collapsed');
-  arrow.textContent = isCollapsed ? '▼' : '▲';
-}
-
-function handleChatImageSelect(e) {
-  const files = Array.from(e.target.files);
-  const currentCount = state.chatAttachedImages.length;
-  
-  if (currentCount + files.length > 10) {
-    toast('Bir mesajda en fazla 10 görsel gönderebilirsiniz.', 'warning');
-    return;
-  }
-  
-  files.forEach(file => {
-    if (!file.type.startsWith('image/')) {
-      toast('Sadece görsel ekleyebilirsiniz.', 'warning');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      state.chatAttachedImages.push({
-        file: file,
-        dataUrl: evt.target.result,
-        mime: file.type
-      });
-      renderChatImagePreviews();
-    };
-    reader.readAsDataURL(file);
-  });
-  
-  e.target.value = '';
-}
-
-function renderChatImagePreviews() {
-  const container = $('#chat-attached-previews');
-  if (state.chatAttachedImages.length === 0) {
-    container.style.display = 'none';
-    container.innerHTML = '';
-    return;
-  }
-  
-  container.style.display = 'flex';
-  container.innerHTML = '';
-  state.chatAttachedImages.forEach((img, idx) => {
-    const div = document.createElement('div');
-    div.className = 'preview';
-    div.innerHTML = `
-      <img src="${img.dataUrl}">
-      <button class="x" onclick="removeChatAttachedImage(${idx}); event.stopPropagation();">×</button>
-    `;
-    container.appendChild(div);
-  });
-}
-
-function removeChatAttachedImage(idx) {
-  state.chatAttachedImages.splice(idx, 1);
-  renderChatImagePreviews();
-}
-
-function copyChatText(bubbleId, btn) {
-  const el = document.getElementById(bubbleId);
-  if(!el) return;
-  const text = el.childNodes[0].textContent.trim();
-  navigator.clipboard.writeText(text).then(() => {
-    btn.innerHTML = '✓';
-    setTimeout(() => {
-      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
-    }, 1200);
-  });
-}
-
-function renderChatMessages() {
-  const area = $('#chat-messages-area');
-  area.innerHTML = '';
-  
-  state.chatMessages.forEach(msg => {
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `chat-msg ${msg.role} ${msg.error ? 'error' : ''}`;
-    
-    let imagesHtml = '';
-    if (msg.images && msg.images.length > 0) {
-      imagesHtml = `<div class="previews" style="margin-bottom: 8px;">` + 
-        msg.images.map(img => `<div class="preview" style="cursor: pointer;" onclick="openExpandModal('${img.dataUrl}', 'image')"><img src="${img.dataUrl}"></div>`).join('') +
-        `</div>`;
-    }
-    
-    const bubbleId = 'chat-bubble-' + Math.random().toString(36).slice(2,8);
-    msgDiv.innerHTML = `${imagesHtml}<div class="chat-msg-bubble" id="${bubbleId}">${escapeHtml(msg.text)}<button class="chat-copy-btn" title="Kopyala" onclick="copyChatText('${bubbleId}', this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></div>`;
-    area.appendChild(msgDiv);
-  });
-  
-  area.scrollTop = area.scrollHeight;
-}
-
-async function sendChatMessage() {
-  if (state.chatSending) return;
-  
-  const textInput = $('#chat-text-input');
-  const text = textInput.value.trim();
-  const attachedImages = [...state.chatAttachedImages];
-  
-  if (!text && attachedImages.length === 0) return;
-  
-  state.chatSending = true;
-  $('#chat-send-btn').disabled = true;
-  
-  // Add user message to UI
-  const userMsg = {
-    role: 'user',
-    text: text,
-    images: attachedImages.map(img => ({ dataUrl: img.dataUrl, mime: img.mime }))
-  };
-  state.chatMessages.push(userMsg);
-  renderChatMessages();
-  
-  // Clear inputs
-  textInput.value = '';
-  textInput.style.height = '';
-  state.chatAttachedImages = [];
-  renderChatImagePreviews();
-  
-  // Add thinking message
-  const thinkingMsg = {
-    role: 'model',
-    text: '⏳ Düşünüyor...',
-    thinking: true
-  };
-  state.chatMessages.push(thinkingMsg);
-  renderChatMessages();
-  
-  // Prepare payload
-  const b64Images = attachedImages.map(img => img.dataUrl.split(',')[1]);
-  const mimes = attachedImages.map(img => img.mime);
-  
-  const payload = {
-    message: text,
-    images: b64Images.length ? b64Images : undefined,
-    image_mimes: mimes.length ? mimes : undefined,
-    history_enabled: state.chatHistoryEnabled,
-    system_prompt: state.chatSystemPrompt || ''
-  };
-  
-  try {
-    const resp = await api('/api/gemma/chat', {
-      method: 'POST',
-      body: payload
-    });
-    
-    state.chatMessages = state.chatMessages.filter(m => !m.thinking);
-    state.chatMessages.push({
-      role: 'model',
-      text: resp.response
-    });
-  } catch(e) {
-    state.chatMessages = state.chatMessages.filter(m => !m.thinking);
-    state.chatMessages.push({
-      role: 'model',
-      text: '❌ Hata: ' + e.message,
-      error: true
-    });
-  } finally {
-    state.chatSending = false;
-    $('#chat-send-btn').disabled = false;
-    renderChatMessages();
-  }
-}
-
-async function clearChatHistory() {
-  const ok = await confirmModal('Sohbet geçmişini sil?', 'Model ile olan geçmiş sohbet kayıtları silinecektir.');
-  if (!ok) return;
-  
-  try {
-    await api('/api/gemma/history', { method: 'DELETE' });
-    state.chatMessages = [{
-      role: 'model',
-      text: '🤖 Sohbet geçmişi temizlendi. Sistem Aktif. Yeni sorularınızı sorabilirsiniz!'
-    }];
-    renderChatMessages();
-    toast('✅ Sohbet geçmişi silindi.', 'success');
-  } catch(e) {
-    toast('Hata: ' + e.message, 'error');
-  }
-}
-
-async function initChat() {
-  try {
-    const res = await api('/api/gemma/history');
-    if (res.history && res.history.length > 0) {
-      state.chatMessages = [];
-      res.history.forEach(item => {
-        const role = item.role;
-        let text = '';
-        const images = [];
-        if (item.parts && Array.isArray(item.parts)) {
-          item.parts.forEach(part => {
-            if (part.text) {
-              text = part.text;
-            } else if (part.inlineData) {
-              const mime = part.inlineData.mimeType;
-              const b64 = part.inlineData.data;
-              images.push({
-                dataUrl: `data:${mime};base64,${b64}`,
-                mime: mime
-              });
-            }
-          });
-        }
-        state.chatMessages.push({
-          role: role,
-          text: text,
-          images: images
-        });
-      });
-      renderChatMessages();
-    }
-  } catch(e) {}
-}
-
-
 // ═══════════════════════════════════════════════════════════════════════════
 //  GENERATE (uses job system)
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2851,6 +1948,7 @@ async function generate(){
     payload.aspect_ratio=state.form.aspect_ratio;
     payload.enable_prompt_expansion=!!state.form.enable_prompt_expansion;
     payload.watermark=!!state.form.watermark;
+    if(state.form.style) payload.style=state.form.style;
     if(state.i2vImageUrl) payload.image_url=state.i2vImageUrl;
     if(state.audioUrl) payload.audio_url=state.audioUrl;
   }else{
@@ -2908,40 +2006,6 @@ $('#btn-new-account').addEventListener('click', async () => {
 $('#btn-refresh').addEventListener('click', refreshBalance);
 $('#btn-generate').addEventListener('click', generate);
 
-// PixelBunny ve Gemma Chat Events
-$$('#provider-selector .tab').forEach(t => t.addEventListener('click', () => selectProvider(t.dataset.provider)));
-$('#pb-generate-btn').addEventListener('click', generatePB);
-$('#pb-save-prompt-btn').addEventListener('click', async () => {
-  const text = ($('#pb-prompt-input').value || '').trim();
-  if(!text){ toast('⚠️ Prompt boş.','warning'); return; }
-  const existing = state.savedPrompts.filter(p => (p.title||'').startsWith('Prompt'));
-  const nextNum = existing.length + 1;
-  const title = 'Prompt ' + nextNum;
-  try {
-    const saved = await api('/api/prompts',{method:'POST',body:{text,title}});
-    state.savedPrompts.unshift(saved); renderPromptLibrary();
-    toast('✅ "'+title+'" olarak kaydedildi!','success');
-  } catch(e) { toast('Hata: '+e.message,'error'); }
-});
-$('#chat-settings-toggle').addEventListener('click', toggleChatSettings);
-$('#chat-history-toggle').addEventListener('change', (e) => { state.chatHistoryEnabled = e.target.checked; });
-$('#chat-clear-history-btn').addEventListener('click', clearChatHistory);
-$('#chat-system-prompt-input').addEventListener('input', (e) => { state.chatSystemPrompt = e.target.value; });
-$('#chat-image-input').addEventListener('change', handleChatImageSelect);
-$('#chat-send-btn').addEventListener('click', sendChatMessage);
-
-const chatTextInput = $('#chat-text-input');
-chatTextInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendChatMessage();
-  }
-});
-chatTextInput.addEventListener('input', () => {
-  chatTextInput.style.height = 'auto';
-  chatTextInput.style.height = chatTextInput.scrollHeight + 'px';
-});
-
 // ═══════════════════════════════════════════════════════════════════════════
 //  RESTORE + INIT
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2950,11 +2014,7 @@ async function restoreJobs(){
     const jobs=await api('/api/jobs');
     Object.entries(jobs).forEach(([jobId,job])=>{
       if(job.status!=='done' && job.status!=='error'){
-        if (job.provider === 'pixelbunny') {
-          createJobCard(jobId,job.prompt||'',job.model||'', 'image');
-        } else {
-          createJobCard(jobId,job.prompt||'',job.model||'',job.task_type||'video');
-        }
+        createJobCard(jobId,job.prompt||'',job.model||'',job.task_type||'video');
         pollJob(jobId);
       }
     });
@@ -2969,8 +2029,6 @@ async function restoreJobs(){
   loadGallery();
   loadPrompts();
   restoreJobs();
-  selectProvider('apixo');
-  initChat();
   if(!state.acctEmail){
     setTimeout(()=>toast('İlk üretim için sağ üstten <b>Yeni Hesap</b> oluştur.', 'warning', 6000), 600);
   }
